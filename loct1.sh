@@ -38,6 +38,7 @@ CH2=~sudas/DARPA/ch2.nii.gz
 
 #mkdir -p backup_for_electrode_cloud
 #cp * backup_for_electrode_cloud
+echo "hostname is $(hostname)"
 
 # Transform whole brain segmentation into CT space
 if [ ! -f  T00_${sub}_mprage_wholebrainseg_to_T01_CT.nii.gz ] || [ $doall == 1 ]; then
@@ -157,7 +158,7 @@ fn=T01_${sub}_CT.nii
 c3d ${fn}.gz -o ${fn}
 echo "x,y,z,t,label,mass,volume,count" > electrode_coordinates.csv
 MATLAB_ROOT=/usr/global/matlabR2011b
-#$ -v LM_LICENSE_FILE=/usr/global/matlabR2011b/licenses/network.lic.rhino-matlab16 
+#$ -v LM_LICENSE_FILE=/usr/global/lmgrd-R2015a/licenses/network.lic.rhino2
 $MATLAB_ROOT/bin/matlab $MATOPT -nodisplay <<MAT
   addpath ~sudas/bin/spm5
   addpath ~sudas/bin/localization/matlab
@@ -372,11 +373,11 @@ mv test.csv electrode_coordinates_T1_mid.csv
 
 # TODO Make sure midpoint label numbers are correct for T2
 cat electrode_coordinates_T1_mid.csv | awk -F "," '{print $1,$2,$3,$5}' > lmT1_mid.txt
-c3d T00_${sub}_mprage.nii.gz -scale 0 -landmarks-to-spheres lmT1.txt 2 -o T00_${sub}_mprageelectrodelabels_spheres_mid.nii.gz 
+c3d T00_${sub}_mprage.nii.gz -scale 0 -landmarks-to-spheres lmT1_mid.txt 2 -o T00_${sub}_mprageelectrodelabels_spheres_mid.nii.gz 
 cat electrode_coordinates_T2_mid.csv | awk -F "," '{print $1,$2,$3,$5}' > lmT2_mid.txt
-c3d T00_${sub}_tse.nii.gz -scale 0 -landmarks-to-spheres lmT2.txt 2 -o T00_${sub}_tseelectrodelabels_spheres_mid.nii.gz 
+c3d T00_${sub}_tse.nii.gz -scale 0 -landmarks-to-spheres lmT2_mid.txt 2 -o T00_${sub}_tseelectrodelabels_spheres_mid.nii.gz 
 cat electrode_coordinates_mid.csv | awk -F "," '{print $1,$2,$3,$5}' > lmCT_mid.txt
-c3d T01_${sub}_CT.nii.gz -scale 0 -landmarks-to-spheres lmCT.txt 2 -o T01_${sub}_CTelectrodelabels_spheres_mid.nii.gz 
+c3d T01_${sub}_CT.nii.gz -scale 0 -landmarks-to-spheres lmCT_mid.txt 2 -o T01_${sub}_CTelectrodelabels_spheres_mid.nii.gz 
 cat electrode_coordinates_mni_mid.csv | awk -F "," '{print $1,$2,$3,$5}' > lmMNI_mid.txt
 c3d $CH2 -scale 0 -landmarks-to-spheres lmMNI_mid.txt 2 -o T00_${sub}_MNIelectrodelabels_spheres_mid.nii.gz 
 

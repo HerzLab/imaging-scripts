@@ -22,7 +22,7 @@ shift
 for i in $*;do
   cd $RAMROOT/$i; 
   rm ${stg}.log
-  qsub -l h_vmem=40.1G,s_vmem=40G -cwd -j y -o ${stg}.log -V -N ${stg}$i $SDIR/${stg}.sh $i; 
+  qsub -q RAM.q -l h_vmem=40.1G,s_vmem=40G -cwd -j y -o ${stg}.log -V -N ${stg}$i $SDIR/${stg}.sh $i; 
 done
 
 cd $oldcwd

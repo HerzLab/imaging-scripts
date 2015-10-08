@@ -36,6 +36,7 @@ CH2=~sudas/DARPA/ch2.nii.gz
 
 #mkdir -p backup_for_electrode_cloud
 #cp * backup_for_electrode_cloud
+echo "hostname is $(hostname)"
 
 # Transform whole brain segmentation into CT space
 if [ ! -f  T00_${sub}_mprage_wholebrainseg_to_T01_CT.nii.gz ] || [ $doall == 1 ]; then
@@ -150,7 +151,7 @@ fn=T01_${sub}_CT.nii
 c3d ${fn}.gz -o ${fn}
 echo "x,y,z,t,label,mass,volume,count" > electrode_coordinates.csv
 MATLAB_ROOT=/usr/global/matlabR2011b
-#$ -v LM_LICENSE_FILE=/usr/global/matlabR2011b/licenses/network.lic.rhino-matlab16 
+#$ -v LM_LICENSE_FILE=/usr/global/lmgrd-R2015a/licenses/network.lic.rhino2
 $MATLAB_ROOT/bin/matlab $MATOPT -nodisplay <<MAT
   addpath ~sudas/bin/spm5
   addpath ~sudas/bin/localization/matlab
@@ -229,9 +230,9 @@ elcount=($(cat electrode_coordinates.csv | awk -F , '{print $8}'))
 elxmmT1=($(cat electrode_coordinates_T1.csv | awk -F , '{print $1}')) 
 elymmT1=($(cat electrode_coordinates_T1.csv | awk -F , '{print $2}')) 
 elzmmT1=($(cat electrode_coordinates_T1.csv | awk -F , '{print $3}')) 
-elxmmT2=($(cat electrode_coordinates_T1.csv | awk -F , '{print $1}')) 
-elymmT2=($(cat electrode_coordinates_T1.csv | awk -F , '{print $2}')) 
-elzmmT2=($(cat electrode_coordinates_T1.csv | awk -F , '{print $3}')) 
+elxmmT2=($(cat electrode_coordinates_T2.csv | awk -F , '{print $1}')) 
+elymmT2=($(cat electrode_coordinates_T2.csv | awk -F , '{print $2}')) 
+elzmmT2=($(cat electrode_coordinates_T2.csv | awk -F , '{print $3}')) 
 
 scale=4;
 

@@ -1,5 +1,5 @@
 #!/bin/bash 
-# set -x
+ set -x
 
 if [ -z $RAMROOT ]; then
   echo "Please define RAMROOT to point to the top level image analysis directory"
@@ -17,7 +17,8 @@ sid=$1
 
 export HIPPOSPM_ROOT=~sudas/bin/scripts/scripts/hippospm/bash
 MATLABROOT=/usr/global/matlabR2011b
-
+export PATH=~sudas/bin:$PATH
+export LD_LIBRARY_PATH=/home1/sudas/lib64:/home1/sudas/libs/icclibs:/home1/sudas/libs:$LD_LIBRARY_PATH
 
 IDS=($sid)
 
