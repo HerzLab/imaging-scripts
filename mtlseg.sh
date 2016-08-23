@@ -10,7 +10,7 @@ if [ $# != 1 ]; then
   echo Usage: $0 SubjectID
   exit 1
 fi
-
+suff=""
 # Subject id passed on the command line
 sid=$1
 
@@ -31,7 +31,7 @@ for ((i=0;i<${#IDS[*]};i++)); do
     MPRAGE=${RAMROOT}/${id}/${scan}_${id}_mprage.nii.gz
     TSE=${RAMROOT}/${id}/${scan}_${id}_tse.nii.gz
 
-    rm -rf $WDIR
+    # rm -rf $WDIR
     if [ -f $TSE ]; then
       #if [ ! -f $WDIR/final/${id}_right_lfseg_corr_nogray.nii.gz ]; then
        if [ TRUE ]; then
@@ -52,7 +52,7 @@ for ((i=0;i<${#IDS[*]};i++)); do
 #      qsub -q RAM.q -j y -o $WDIR/dump -cwd -V -N ad"$(echo ${id} | sed -e 's/_S_//g')" \
       $ASHS_ROOT/bin/ashs_main.sh \
         -Q -q "-q RAM.q -l h_vmem=10.1G,s_vmem=10G" \
-        -a $ATLAS -s 0-7 -d -T -I $id -g $MPRAGE -f $TSE -w $WDIR &
+        -N -a $ATLAS -s 0-7 -d -T -I $id -g $MPRAGE -f $TSE -w $WDIR &
 # -N
 # -Q -q "-l h_vmem=7.1G,s_vmem=7G" \
 

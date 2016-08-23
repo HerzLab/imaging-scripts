@@ -133,6 +133,9 @@ for ((i=0;i<${#elnames[*]};i++)); do
   mlname=$(cat $snapmtlfn | sed -e 's/^[ \t]*//'  | grep "^${mlabel} " | sed -r 's/[^\"]*([\"][^\"]*[\"][,]?)[^\"]*/\1 /g')
   label=$(c3d $segwb -probe $loc | awk '{print $NF}')
   lname=$(cat $snapwbfn | grep "^${label}," | cut -f 2 -d ",")
+  if [[ $lname == *Clear\ Label* ]]; then
+    lname="Not in segmented brain"
+  fi
   if [[ $mlname == *Clear\ Label* ]]; then
     alname=$lname
   else
@@ -265,6 +268,9 @@ for ((i=0;i<${#elnames[*]};i++)); do
   mlname=$(cat $snapmtlfn | sed -e 's/^[ \t]*//'  | grep "^${mlabel} " | sed -r 's/[^\"]*([\"][^\"]*[\"][,]?)[^\"]*/\1 /g')
   wlabel=$(c3d $segwbT1 -interp NN -probe $locT1 | awk '{print $NF}')
   lname=$(cat $snapwbfn | grep "^${wlabel}," | cut -f 2 -d ",")
+  if [[ $lname == *Clear\ Label* ]]; then
+    lname="Not in segmented brain"
+  fi
   if [[ $mlname == *Clear\ Label* || -z $mlname ]]; then
     alname=$lname
   else
@@ -300,6 +306,9 @@ for ((i=0;i<${#elnames[*]};i++)); do
       mlname=$(cat $snapmtlfn | sed -e 's/^[ \t]*//'  | grep "^${mlabel} " | sed -r 's/[^\"]*([\"][^\"]*[\"][,]?)[^\"]*/\1 /g')
       wlabel=$(c3d $segwb -interp NN -probe $loc | awk '{print $NF}')
       lname=$(cat $snapwbfn | grep "^${wlabel}," | cut -f 2 -d ",")
+      if [[ $lname == *Clear\ Label* ]]; then
+        lname="Not in segmented brain"
+      fi
       if [[ $mlname == *Clear\ Label* ]]; then
         alname=$lname
       else

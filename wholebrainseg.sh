@@ -10,6 +10,8 @@ if [ $# != 1 ]; then
   echo Usage: $0 SubjectID
   exit 1
 fi
+suff=_with_post_implant_MRI
+suff=""
 
 # Subject id passed on the command line
 sid=$1
@@ -24,6 +26,7 @@ for ((i=0;i<${#IDS[*]};i++)); do
   TP=T00
 
     MPRAGE_PREF=${TP}_${id}_mprage
+    MPRAGE_PREF=${TP}_${id}_mprage${suff}
 
       WAIT=TRUE
       while [ "$WAIT" == "TRUE" ]; do
@@ -40,6 +43,9 @@ for ((i=0;i<${#IDS[*]};i++)); do
  
     subdir=$RAMROOT/$id
     mkdir -p $subdir/${TP}_${id}_mprage/dump
+    mkdir -p $subdir/${TP}_${id}_mprage${suff}/dump
+
+    c3d $subdir/${TP}/thickness/${id}ExtractedBrain0N4.nii.gz -o $subdir/${TP}_${id}_mprage${suff}.nii.gz
 
     #  qsub -l h_vmem=10.1G,s_vmem=10G -j y -o $subdir/${TP}_${i}_mprage/dump -V -N ah"$(echo ${i} | sed -e 's/_S_//g')" \
 # /home/srdas/bin/ahead_joint/turnkey/bin/hippo_seg_WholeBrain_itkv4_v3.sh $subdir $subdir  ${TP}_${i}_mprage  /home/srdas/bin/ahead_joint/turnkey/data/WholeBrain 1 &

@@ -6,6 +6,7 @@ set -x -e
 # INIT
 #ANTSPATH=/home/avants/bin/ants
 ANTSPATH=~sudas/bin/localization/ants_avants_Dec162013/
+ANTSPATH=/home1/sudas/bin/ants_cook_Sep012015/
 NEWANTSDIR=~/bin/ants_cook_Sep012015
 PATH=$ANTSPATH:$PATH
 BINDIR=~sudas/bin/localization/ashs/ext/Linux/bin
@@ -15,35 +16,42 @@ if [[ ! $TMPDIR ]]; then
   TMPDIR=$(mktemp -d)
 fi
 
-LABEL_IDS=(BKG CA      DG  SUB ERC  BA35 BA36 PHC )
-LABEL_MRG=("0" "1 2 4" "3" "8" "10" "11" "12" "13")
-LABEL_NEW=(0   1       2   3   4    5    6    7   )
+LABEL_IDS=(BKG      CA      DG  SUB ERC  BA35 BA36 PHC  CS)
+LABEL_MRG=("0 7 16" "1 2 4" "3" "8" "10" "11" "12" "13" "14")
+LABEL_NEW=(0        1       2   3   4    5    6    7   8)
+MESH_LABEL=(CA SUB ERC BA35 BA36 PHC)
 KINDS="tse mprage ${LABEL_IDS[*]}"
-EVALLABELS=(CA DG SUB ERC BA35 BA36 PRC   PHC HIPP     EXPHIPP   ALL)
-RANGES=(    1  2  3   4   5    6    "5 6" 7   "1 2 3"  "4 5 6 7" "1 2 3 4 5 6 7")
+EVALLABELS=(CA DG SUB ERC BA35 BA36 PRC   PHC CS HIPP     EXPHIPP   ALL)
+RANGES=(    1  2  3   4   5    6    "5 6" 7   8  "1 2 3"  "4 5 6 7" "1 2 3 4 5 6 7")
 
 # Relevant labels
-LABEL_FG=(CA DG SUB ERC BA35 BA36 PHC)
-MESH_EVAL=(       CA  DG  SUB ERC BA35 BA36 PRC   PHC)
-MESH_EVAL_RANGES=(1   2   3   4   5    6    "5 6" 7  )
-EXTRAMESHES=(HIPPO MRG)
-EXTRAMESHESDEF=("-1  1  1 -1 -1 -1 -1 -1" \
-                "-1  1 -1  1  1  1  1  1")
+LABEL_FG=(CA DG SUB ERC BA35 BA36 PHC CS)
+MESH_EVAL=(       CA  DG  SUB ERC BA35 BA36 PRC   PHC CS)
+MESH_EVAL_RANGES=(1   2   3   4   5    6    "5 6" 7  8)
+EXTRAMESHES=(HIPPO PRC ExtHippo MRG)
+# EXTRAMESHESDEF=("-1  1  1 -1 -1 -1 -1 -1" \
+#                 "-1  1 -1  1  1  1  1  1")
+EXTRAMESHESDEF=("-1  1  1 -1 -1 -1 -1 -1 -1" \
+                "-1 -1 -1 -1 -1  1  1 -1 -1" \
+                "-1 -1 -1  1  1  1  1  1 -1" \
+                "-1  1 -1  1  1  1  1  1 -1")
+
 
 ROOT=~sudas/DARPA/Thickness
 WORKDIR=$ROOT
 ASHSRUNDIR=$ROOT/ashs_run
+MATLABCODEDIR=$WORKDIR/matlabcode/
 
 SUBJ_TXT=$WORKDIR/analysis_input/subj.txt
 
 ##############################################################################
-# Parameters needs to be specify
+# Parameters needs to be specified
 
 # 1. Experiment number
 expid=exp01
 expdir=$WORKDIR/thickness
 DUMPDIR=${expdir}/dump
-#STATDIR=$WORKDIR/analysis_input/stat${expid}/
+STATDIR=$WORKDIR/analysis_input/stat${expid}/
 mkdir -p ${expdir}/dump
 
 # 2. Group settings (can be single group)
@@ -75,12 +83,12 @@ function main()
   #reset_dir
   #copy_data
   #initial_average
-  main_loop
+  #main_loop
   #make_images
   #warp_labels
   #warp_meshes
   #evaluation
-  #disp_stats
+  disp_stats
   #thick_stats
 }
 
@@ -320,11 +328,15 @@ function shape_update_to_template()
     -R ${expdir}/group${grp}/work/template_${side}_${grp}_tse.nii.gz
 
   TEMPWARPFULL=${expdir}/group${grp}/work/template_${side}_${grp}_fullwarp.nii.gz
+  # trap "{ echo Composing done $?;  }" EXIT
+  echo "Will compose transform now"
   $ANTSPATH/ComposeMultiTransform 3 \
     $TEMPWARPFULL -R ${expdir}/group${grp}/work/template_${side}_${grp}_tse.nii.gz \
     -i $TEMPAFF $TEMPWARP $TEMPWARP $TEMPWARP $TEMPWARP
 
-  echo "Composing done"
+  cp ${expdir}/group${grp}/work/template_${side}_${grp}_fullwarp.nii.gz \
+    ${expdir}/group${grp}/work/template_${side}_${grp}_fullwarp_bkp.nii.gz
+
   # Apply this warp to all the template derivatives
   for kind in $KINDS; do
 
@@ -335,6 +347,7 @@ function shape_update_to_template()
       $TEMPWARPFULL
 
   done
+  echo "Applied composed warp"
 }
 
 function ants_iter()
@@ -422,8 +435,7 @@ function main_loop
 {
   # Main iteration loop
   PREFIX=ANTs${expid}
-  #for side in left right; do
-  for side in left; do
+  for side in left right; do
 
     for ((iter=0;iter<$ITER;iter++)); do
       
@@ -480,13 +492,14 @@ function main_loop
         
           # Perform shape averaging
           if [[ $doants -eq 1 ]]; then
-            qsub -cwd -o $DUMPDIR -j y -N \
-               "${PREFIX}_shapeupdate_${side}_${grp}" $0 \
-                shape_update_to_template $side $grp
-                 # Wait for completion
-            qsub -cwd -o $DUMPDIR -j y \
-              -hold_jid "${PREFIX}_shapeupdate*" -sync y -b y \
-              sleep 1
+            shape_update_to_template $side $grp
+#            qsub -cwd -o $DUMPDIR -j y -N \
+#               "${PREFIX}_shapeupdate_${side}_${grp}" $0 \
+#                shape_update_to_template $side $grp
+#                 # Wait for completion
+#            qsub -cwd -o $DUMPDIR -j y \
+#              -hold_jid "${PREFIX}_shapeupdate*" -sync y -b y \
+#              sleep 1
 
           fi
 
@@ -804,7 +817,7 @@ function eval_subj()
     SIZE=$(cat $TMPDIR/mask_seg.vtk | wc -l)
     if [[ $SIZE -gt 6 ]]; then
 
-      MESH_DIST_TMP="$(meshdiff ${expdir}/group${grp}/meshwarp/${id}_${side}_${grp}_${MESH_EVAL[i]}_tempfit.vtk $TMPDIR/mask_seg.vtk | grep RESULT | awk '{print $7}')"
+      MESH_DIST_TMP="$($BINDIR/meshdiff ${expdir}/group${grp}/meshwarp/${id}_${side}_${grp}_${MESH_EVAL[i]}_tempfit.vtk $TMPDIR/mask_seg.vtk | grep RESULT | awk '{print $7}')"
 
       if [[ $MESH_DIST_TMP == "" ]]; then
         MESH_DIST="$MESH_DIST NA"
@@ -881,18 +894,19 @@ function disp_stats()
       for sub in $ALLSF; do
 
         # Submit job for this subject
-        qsub -cwd -o $DUMPDIR -j y \
-          -N "${PREFIX}_${side}_${grp}_${sub}" \
-          $0 disp_stats_sub $side $grp $sub
+  #      qsub -cwd -o $DUMPDIR -j y \
+  #        -N "${PREFIX}_${side}_${grp}_${sub}" \
+  #        $0 disp_stats_sub $side $grp $sub
+           disp_stats_sub $side $grp $sub
 
       done
     done
   done
 
   # Wait for completion
-  qsub -cwd -o $DUMPDIR -j y \
-       -hold_jid "${PREFIX}_*" -sync y -b y \
-       sleep 1
+  #qsub -cwd -o $DUMPDIR -j y \
+  #     -hold_jid "${PREFIX}_*" -sync y -b y \
+  #     sleep 1
 }
 
 function disp_stats_sub()
@@ -900,6 +914,8 @@ function disp_stats_sub()
   side=$1
   grp=$2
   sub=$3
+
+  # TODO following lines appear to be different from Long's 101 script but should do the same thing
 
   #IDS=$(ls ${expdir}/data | grep ${side}_${grp}_tse | sed -e "s/_${side}_${grp}_tse.nii.gz//")
   #IDS=$(cat $WORKDIR/group/IDs_grp${expid}/subjID_${side}_${grp}.txt)
@@ -909,14 +925,14 @@ function disp_stats_sub()
   MESHES=$(for id in $IDS; do \
     echo $(find ${expdir}/group${grp}/meshwarp | grep ${expdir}/group${grp}/meshwarp/${id}_${side}_${grp} | grep ${sub}_tempfit ); done)
 
-  meshdisp $MESHES \
+  $BINDIR/meshdisp $MESHES \
     ${expdir}/group${grp}/meshwarp/analysis/disp_${side}_${grp}_${sub}.vtk
 
   # Thickness analysis
   MESHES=$(for id in $IDS; do \
     echo $(find ${expdir}/group${grp}/meshwarp | grep ${expdir}/group${grp}/meshwarp/${id}_${side}_${grp} | grep ${sub}_thickmap ); done)
 
-  mesh_merge_arrays \
+  $BINDIR/mesh_merge_arrays \
     -r ${expdir}/group${grp}/meshwarp/template_${side}_${grp}_${sub}.vtk \
     ${expdir}/group${grp}/meshwarp/analysis/thick_${side}_${grp}_${sub}.vtk \
     Thickness $MESHES
@@ -988,7 +1004,7 @@ function thick_stats_sub()
     MESHES=$(for id in $SUBJ; do \
       echo $(find ${expdir}/group${grp}/meshwarp | grep "${id}.*_${side}_${grp}_${sub}_thickmap.vtk"); done)
 
-    mesh_merge_arrays -r \
+    $BINDIR/mesh_merge_arrays -r \
       ${expdir}/group${grp}/meshwarp/template_${side}_${grp}_${sub}.vtk \
       $WORK/thick_${side}_${grp}_${sub}.vtk Thickness $MESHES
 
@@ -1014,7 +1030,7 @@ function thick_stats_sub()
     for sub in $MYGRP; do
       MESHPARAM="$MESHPARAM -m $WORK/thick_${side}_${grp}_${sub}.vtk $CWORK/thickstat_${FULLNM}_${side}_${grp}_${sub}.vtk"
 
-      meshglm $MESHPARAM \
+      $BINDIR/meshglm $MESHPARAM \
         -g $WORK/design_${side}.txt $CWORK/contrast.txt \
         -a Thickness
 

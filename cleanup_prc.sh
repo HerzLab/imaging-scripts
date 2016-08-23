@@ -3,13 +3,11 @@
  set -x
 
 # Common stuff
-IMROOT=~pauly/bin/imagemagick
+IMROOT=~sudas/bin/imagemagick
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$IMROOT/lib
 export PATH=$PATH:$IMROOT/bin
-ROOT=~/wd/7T/long
-ROOT=~/wd/ADNI2/long
+ROOT=~/DARPA/long
 export ROOT
-SFSEG=sfsegutrecht
 SFSEG=sfseg
 
 
@@ -18,7 +16,6 @@ function cleanup_prc()
 {
   in=$1
   out=$2
-  atype=$3
 
   INFO=$(c3d $in -thresh 9 inf 1 0 -dilate 0 1x1x0vox  -o $TMPDIR/temp.nii.gz -info)
   NS=$(echo $INFO | sed -e "s/.*dim = .//g" -e "s/.;.*bb.*//g" | awk -F ',' '{print $3}')
@@ -42,32 +39,41 @@ function cleanup_prc()
 function genstats()
 {
   in=$1
-  atype=$2
   c3d $in -dup -lstat > $TMPDIR/stat.txt
 
-  if [ "$atype" == "NOPHG" ]; then
-    list=$(echo 1 2 4 3 7 8 9 11 12 13)
-  elif [ "$atype" == "PHG" ]; then
-    list=$(echo 1 2 4 3 7 8 10 11 12 14)
-  elif [ "$atype" == "UTR" ]; then
-    list=$(echo 1 2 3 4 5 6 7 8)
-  fi
-  VOLS=$(
-  for i in $list; do
-    cat $TMPDIR/stat.txt | awk "BEGIN {k=0;n=0} NR>1 && \$1 == $i { k=\$7; n=\$10; } END {print k,n}"
-  done)
-  # Add CA1/2/3
-  
-  if [ "$atype" == "NOPHG" ] || [ "$atype" == "PHG" ]; then
-    c3d $in -replace 2 1 4 1 -dup -lstat > $TMPDIR/stat.txt
-    VOLSCA=$(
-    for i in 1; do
-      cat $TMPDIR/stat.txt | awk "BEGIN {k=0;n=0} NR>1 && \$1 == $i { k=\$7; n=\$10; } END {print k,n}"
-    done) 
-    VOLS="$VOLS $VOLSCA"
-  fi
+  namelist=$(echo CA1 CA2 CA3 DG SUB ERC BA35 BA36 PHC CA HIPP)
+  list=$(echo 1 2 4 3 8 10 11 12 13)
 
-  echo $VOLS | sed -e "s/ /,/g"
+  VOLS=""
+  for i in $list; do
+    THISVOL=$(cat $TMPDIR/stat.txt | sed -e 's/  */ /g' -e 's/^ *\(.*\) *$/\1/' | grep "^$i " | awk '{print $7}')
+    THISNSLICE=$(cat $TMPDIR/stat.txt | sed -e 's/  */ /g' -e 's/^ *\(.*\) *$/\1/' | grep "^$i " | awk '{print $10}')
+    THISNVOL=$(echo $THISVOL/$THISNSLICE | bc -l)
+    VOLS="$VOLS, $THISVOL, $THISNSLICE, $THISNVOL"
+  done
+  VOLS=${VOLS#,}
+
+
+  # Add CA1/2/3
+  c3d $in -replace 2 1 4 1 -dup -lstat > $TMPDIR/stat.txt
+  for i in 1; do
+    THISVOL=$(cat $TMPDIR/stat.txt | sed -e 's/  */ /g' -e 's/^ *\(.*\) *$/\1/' | grep "^$i " | awk '{print $7}')
+    THISNSLICE=$(cat $TMPDIR/stat.txt | sed -e 's/  */ /g' -e 's/^ *\(.*\) *$/\1/' | grep "^$i " | awk '{print $10}')
+    THISNVOL=$(echo $THISVOL/$THISNSLICE | bc -l)
+    VOLS="$VOLS, $THISVOL, $THISNSLICE, $THISNVOL"
+  done
+
+  # Add CA/DG for HIPP
+  c3d $in -replace 2 1 4 1 3 1 -dup -lstat > $TMPDIR/stat.txt
+  for i in 1; do
+    THISVOL=$(cat $TMPDIR/stat.txt | sed -e 's/  */ /g' -e 's/^ *\(.*\) *$/\1/' | grep "^$i " | awk '{print $7}')
+    THISNSLICE=$(cat $TMPDIR/stat.txt | sed -e 's/  */ /g' -e 's/^ *\(.*\) *$/\1/' | grep "^$i " | awk '{print $10}')
+    THISNVOL=$(echo $THISVOL/$THISNSLICE | bc -l)
+    VOLS="$VOLS, $THISVOL, $THISNSLICE, $THISNVOL"
+  done
+
+  echo $VOLS
+  # echo $VOLS | sed -e "s/ /,/g"
 }
 
 # Make PNG montage
@@ -76,17 +82,9 @@ function make_png()
   id=$1
   side=$2
   tp=$3
-  atype=$4
   MRI=$ROOT/$id/$tp/${SFSEG}/tse_native_chunk_${side}.nii.gz
   SEG=cleanup/${id}_${tp}_seg_${side}.nii.gz
-  if [ "$atype" == "NOPHG" ]; then
-    LABELS=/home/pauly/wolk/headtailatlas/snaplabels.txt
-  elif [ "$atype" == "PHG" ]; then
-    LABELS=/data/picsl/pauly/wolk/atlas2014/ashs01/ashs_atlas_upennpmc_20140902/snap/snaplabels.txt
-  elif [ "$atype" == "UTR" ]; then
-    LABELS=~/wd/7T/long/utrechtlabels.txt
-  fi
-
+  LABELS=~sudas/bin/localization/mtl_itksnaplabelfile.txt
 
   if [ -f cleanup/png/${id}_${tp}_${side}_qa.png ]; then
     # return
@@ -134,22 +132,6 @@ function make_png()
     cleanup/png/${id}_${tp}_${side}_qa.png
 }
 
-# Find out which atlas was used
-function getatlas()
-{
-  fn=$1
-  range=$(c3d $fn  -info | cut -f 4 -d ";" | cut -f 2 -d "=")
-  if [ "$range" == " [0, 13]" ]; then
-    echo NOPHG
-  fi
-  if [ "$range" == " [0, 14]" ]; then
-    echo PHG
-  fi
-  if [ "$range" == " [0, 8]" ]; then
-    echo UTR
-  fi
-}
-
 # Clean up an individual subject
 function cleanup_subject()
 {
@@ -160,19 +142,15 @@ function cleanup_subject()
   statline="$id"
   for side in left right; do
     seg=$ROOT/$id/$tp/${SFSEG}/bootstrap/fusion/lfseg_corr_nogray_${side}.nii.gz
-    atlastype=$(getatlas $seg)
     cleanup_prc $seg \
-    cleanup/${id}_${tp}_seg_${side}.nii.gz $atlastype
+    cleanup/${id}_${tp}_seg_${side}.nii.gz 
   
-    # 7T
-    # cp $seg \
-    # cleanup/${id}_${tp}_seg_${side}.nii.gz
     if [ "$side" == "left" ]; then
       THICK=$(c3d cleanup/${id}_${tp}_seg_left.nii.gz -info-full | grep Spacing | sed -e "s/[a-zA-Z:,]//g" -e "s/\]//" -e "s/\[//" | awk '{print $3}')
       statline="$statline,$THICK"
     fi
-    make_png $id $side $tp $atlastype
-    statline="${statline},$(genstats cleanup/${id}_${tp}_seg_${side}.nii.gz $atlastype)"
+    make_png $id $side $tp 
+    statline="${statline},$(genstats cleanup/${id}_${tp}_seg_${side}.nii.gz )"
   done
   echo $statline >> cleanup/stats/stats_${tp}_${id}_whole.txt
 }
@@ -286,67 +264,28 @@ echo "$dataline"
 # Clean up the names for the analysis
 function cleanup_names()
 {
-  HEADER="ID,RID,TP,SCANDATE,VISITSTR,ICV"
-# Not doing 1-4 visual QA score anymore so drop $qa
-#  HEADER="$HEADER,QA_Ringing,QA_Motion,QA_CNR,QA_SNR,QA_COMMENT,QA_VISUAL"
-  HEADER="$HEADER,QA_Ringing,QA_Motion,QA_CNR,QA_SNR,QA_COMMENT"
-  HEADER="$HEADER,Extent"
-  HEADER="$HEADER,Slice_Thickness"
+  HEADER="ID,TP,ICV,Extent,Slice_Thickness"
 
-  atype=$1
-
-  if [ "$atype" == "NOPHG" ]; then
-    list=$(echo 1 2 4 3 7 8 9 11 12 13)
-    list=$(echo CA1 CA2 CA3 DG MISC SUB ERC BA35 BA36 CS)
-  elif [ "$atype" == "PHG" ]; then
-    list=$(echo 1 2 4 3 7 8 10 11 12 14)
-    list=$(echo CA1 CA2 CA3 DG MISC SUB ERC BA35 BA36 sulcus)
-  elif [ "$atype" == "UTR" ]; then
-    list=$(echo 1 2 3 4 5 6 7 8)
-    list=$(echo ERC SUB CA1 CA2 DG CA3 Cyst Tail)
-  HEADER="ID,RID,TP,ICV"
-  fi
-
-  list=$(echo CA1 CA2 CA3 DG MISC SUB ERC BA35 BA36 sulcus CA)
+  list=$(echo CA1 CA2 CA3 DG SUB ERC BA35 BA36 PHC CA HIPP)
 
   for side in left right; do
     for sf in $list; do
-      HEADER="$HEADER,${side}_${sf}_vol,${side}_${sf}_ns"
+      HEADER="$HEADER,${side}_${sf}_vol,${side}_${sf}_ns,${side}_${sf}_nvol"
     done
   done
+  HEADER="$HEADER,${sf}_AR"
   echo $HEADER > stats_lr_cleanup.csv
 
   for fn in $(ls cleanup/stats/); do
 
     id=$(cat cleanup/stats/$fn | head -n 1 | awk -F ',' '{print $1}')
     tp=$(echo $fn | cut -f 2 -d "_")
-    extent=$(echo $fn | cut -f 6 -d "_" | cut -f 1 -d ".")
+    extent=$(echo $fn | cut -f 4 -d "_" | cut -f 1 -d ".")
 
     # Get the ICV value
     ICV=$(cat $ROOT/${id}/$tp/${SFSEG}/final/${id}_icv.txt | awk '{print $2}')
     
-    newline="$id,$(grep $tp $ROOT/${id}/dates.txt | sed -e 's/ /,/g' | cut -f 3- -d "_"),$ICV"
-    qaline=$(get_qa $id $ROOT/qa_visual_ternary.txt $ROOT/ADNI2_HighResHippoQC-2015.01.20.csv $tp)
-    newline="${newline},${qaline}"
-    newline="${newline},${extent}"
-
-
-
-:<<'NOXVAL'
-    if [[ $(echo $id | grep xval) ]]; then
-
-      dwid=$(echo $id | awk -F '_' '{print $3}')
-      scandate=$(ls ~srdas/wd/ADC/$dwid/$tp/rawNii \
-        | grep 'DW.*nii.gz' | head -n 1 | awk -F '_' '{print $2}')
-
-      newline="$dwid,$tp,$scandate,xval,$ICV"
-
-    else
-
-      newline="$(echo $id | sed -e "s/_/,/g"),norm,$ICV"
-
-    fi
-NOXVAL
+    newline="$id,$tp,$ICV,$extent"
 
     cat cleanup/stats/$fn | sed -e "s/$id/$newline/g" | tee -a stats_lr_cleanup.csv
 
@@ -361,40 +300,13 @@ mkdir -p cleanup/dump
 mkdir -p cleanup/png
 mkdir -p cleanup/stats
 
-#:<<'COMM'
-# for fn in $(cat ../adnisteeringmeeting.txt | grep -v XXX | awk '{print $1}'); do
-#  for fn in $(ls -1 $ROOT/*/*/${SFSEG}/final/*_right_lfseg_corr_nogray.nii.gz |  cut -f 1 -d "/"); do
-#  for fn in $(ls -1 $ROOT/*/T*/${SFSEG}/final/*_right_lfseg_corr_nogray.nii.gz ); do
-#  for fn in $(cat rerunashs.txt | awk '{print $1}'); do
-# for fn in $(cat priorityset.txt | grep -v TXX | awk '{print $1}'); do
-#  for fn in $(cat haveutrechtsegs.txt | awk '{print $1}'); do
-IDS=($(cat sublist.txt | grep -v TXX | awk '{print $1}'))
-tps=($(cat sublist.txt | grep -v TXX | awk '{print $2}'))
-IDS=($(cat havesegs.txt | awk '{print $1}'))
-tps=($(cat havesegs.txt | awk '{print $3}'))
-IDS=($(cat haveutrechtsegs.txt | awk '{print $1}'))
-IDS=($(cat newpriorityset.txt | grep -v TXX | awk '{print $1}'))
-tps=($(cat newpriorityset.txt | grep -v TXX | awk '{print $2}'))
-IDS=($(cat sublist_not_in_priorityset.txt | grep -v TXX | awk '{print $1}'))
-tps=($(cat sublist_not_in_priorityset.txt | grep -v TXX | awk '{print $2}'))
+IDS=($(cat sublist.txt))
 for ((i=0;i<${#IDS[*]};i++)); do
   fn=${IDS[i]}
-  tp=${tps[i]}
+  tp=T00
  
   echo $fn
   sub=$fn
-#  for fn in 041_S_5173 ; do
-    # tp=$(grep $fn ../adnisteeringmeeting.txt | awk '{print $3}')
-    #tp=$(grep $fn rerunashs.txt | awk '{print $2}')
-    # tp=$(echo $fn | cut -f 8 -d "/") 
-
-    # ADNI
-    #tp=T00
-    #sub=$(echo $fn | cut -f 7 -d "/")
-
-    # 7T
-    #sub=$fn
-    #tp=T00
 
     export tp
     # if [ -f cleanup/stats/stats_${tp}_${fn}.txt ]; then
@@ -406,12 +318,10 @@ for ((i=0;i<${#IDS[*]};i++)); do
       # qsub -V -cwd -o cleanup/dump -j y -N "sfcleanup_${fn}_${tp}" $0 cleanup_subject $fn $tp
       qsub -V -cwd -o cleanup/dump -j y -N "sfcleanup_${sub}_${tp}" \
         $0 cleanup_subject $sub $tp
-      sleep 0.1
     fi
 done 
 
   qsub -V -cwd -o cleanup/dump -j y -hold_jid "sfcleanup_*" -sync y -b y sleep 1
-#COMM
   echo "calling cleanup_names"
   cleanup_names 
 }
@@ -422,9 +332,9 @@ elif [[ $1 = "cleanup_subject" ]]; then
   TMPDIR=$(mktemp -d)
   export TMPDIR
   cleanup_subject $2 $3
-  cleanup_head $2 $3
-  measure_body $2 $3
-  measure_tail $2 $3
+#  cleanup_head $2 $3
+#  measure_body $2 $3
+#  measure_tail $2 $3
   rm -rf $TMPDIR
 elif [[ $1 == "make_png" ]]; then
   TMPDIR=$(mktemp -d)

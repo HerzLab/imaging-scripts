@@ -1,6 +1,6 @@
 if [ $# -lt 2 ]; then
-  echo Usage: $0 stage SubjectID
-  echo Example: $0 coreg R1001P
+  echo Usage: $0 stage SubjectID [optarg]
+  echo Example: $0 coreg R1001P [NOREG]
   echo Example: $0 loc R1001P
   echo Example: $0 norm R1001P
   echo Example: $0 walk R1001P
@@ -19,10 +19,10 @@ cd $SDIR
 SDIR=$PWD
 
 shift
-for i in $*;do
-  cd $RAMROOT/$i; 
+for i in $1;do
+  cd $RAMROOT/${i}; 
   rm ${stg}.log
-  qsub -q RAM.q -l h_vmem=40.1G,s_vmem=40G -cwd -j y -o ${stg}.log -V -N ${stg}$i $SDIR/${stg}.sh $i; 
+  qsub -P RAM_DCC -l h_vmem=20.1G,s_vmem=20G -cwd -j y -o ${stg}.log -V -N ${stg}$i $SDIR/${stg}.sh $*; 
 done
 
 cd $oldcwd
