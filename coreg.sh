@@ -31,6 +31,7 @@ export PATH=$ANTSPATH:~sudas/bin:$PATH
 if $NOREG ; then
   :
 else
+
   f=T00_${1}_mprage.nii.gz
   m=T00_${1}_tse.nii.gz
   if [ -f T00_${1}_tse.nii.gz ]; then
@@ -41,7 +42,7 @@ else
       -s 4x2x0  \
       -f 4x2x1 -l 1 \
       -r [ $f, $m, 1 ] \
-      -a 1 \
+      -a 1 $mask \
       -o [ T00_tse_to_T00_mprageANTs , T00_tse_to_T00_mprageANTs.nii.gz, T00_tse_to_T00_mprageANTs_inverse.nii.gz ]
     ~sudas/bin/ConvertTransformFile 3 T00_tse_to_T00_mprageANTs0GenericAffine.mat \
         T00_tse_to_T00_mprageANTs0GenericAffine_RAS.mat --hm
@@ -88,6 +89,10 @@ c3d T01_${1}_CT.nii.gz -popas A T00/sfseg/final/${1}_left_lfseg_${segtype}.nii.g
   -split -foreach -smooth 0.5vox -insert A 1 -reslice-matrix T01_CT_to_T00_tseANTs_RAS_inv.mat -endfor -merge \
   -o T00_${1}_segmentation_to_T01_CT.nii.gz
 
+if [ -f T00_${1}_mprage_brainBrainExtractionBrain/T00_${1}_mprage_brainBrainExtractionBrain_wholebrainseg.nii.gz ]; then
+  mkdir -p T00_${1}_mprage
+  cp T00_${1}_mprage_brainBrainExtractionBrain/T00_${1}_mprage_brainBrainExtractionBrain_wholebrainseg.nii.gz  T00_${1}_mprage/T00_${1}_mprage_wholebrainseg.nii.gz
+fi
 
 c3d_affine_tool  T01_CT_to_T00_mprageANTs0GenericAffine_RAS.mat  -inv -o T01_CT_to_T00_mprageANTs0GenericAffine_RAS_inv.mat
 c3d T01_${1}_CT.nii.gz  T00_${1}_mprage/T00_${1}_mprage_wholebrainseg.nii.gz -interp NN -reslice-matrix T01_CT_to_T00_mprageANTs0GenericAffine_RAS_inv.mat -o T00_${1}_mprage_wholebrainseg_to_T01_CT.nii.gz

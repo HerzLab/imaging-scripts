@@ -23,6 +23,7 @@ for i in $1;do
   cd $RAMROOT/${i}; 
   rm ${stg}.log
   qsub -P RAM_DCC -l h_vmem=20.1G,s_vmem=20G -cwd -j y -o ${stg}.log -V -N ${stg}$i $SDIR/${stg}.sh $*; 
+  # no DCC #  qsub -l h_vmem=20.1G,s_vmem=20G -cwd -j y -o ${stg}.log -V -N ${stg}$i $SDIR/${stg}.sh $*; 
 done
 
 cd $oldcwd

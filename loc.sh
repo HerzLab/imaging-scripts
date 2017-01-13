@@ -196,6 +196,9 @@ mv test.csv electrode_coordinates_T2.csv
 cat electrode_coordinates_T1.csv | sed -n '2,$p' | awk -F',' '{print -1*$1, -1*$2, $3, $4, $5, $6, $7, $8}' OFS=',' > test.csv
 mv test.csv electrode_coordinates_T1.csv
 
+# Add electrode names to electrode_coordinates_T1.csv for FS conversion
+
+
 # Draw spheres around electrode locations
 cat electrode_coordinates_T1.csv | awk -F "," '{print $1,$2,$3,NR}' > lmT1.txt
 c3d T00_${sub}_mprage.nii.gz -scale 0 -landmarks-to-spheres lmT1.txt 2 -o T00_${sub}_mprageelectrodelabels_spheres.nii.gz
@@ -333,8 +336,15 @@ for ((i=0;i<${#elnames[*]};i++)); do
 done
     
 paste -d "," electrodenames_native.csv electrode_coordinates_native.csv > electrodenames_coordinates_native.csv
+paste -d ","  electrodenames_coordinates_native.csv electrode_coordinates_T1.csv > electrodenames_coordinates_native_and_T1.csv
 paste -d "," electrodenames_mid.csv electrode_coordinates_mid.csv > electrodenames_coordinates_mid.csv
 cp electrode_coordinates_mid.csv electrode_coordinates_mid_CT.csv
+
+# Add electrode names on some files
+cat electrodenames_native.csv | cut -f -d "," > namesonly.csv
+if [ ! -f T00/thickness/CorticalThicknessNormalizedToTemplate.nii.gz ]; then
+  paste -d "," namesonly.csv electrode_coordinates_mni.csv > electrodenames_coordinates_mni.csv
+fi
 
 # Change from Nifti to ITK coordinates for antsApplyTransformsToPoints
 cat electrode_coordinates_mid.csv | awk -F',' '{print -1*$1, -1*$2, $3, $4, $5, $6, $7, $8}' OFS=',' > test.csv

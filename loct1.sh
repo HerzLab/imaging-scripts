@@ -135,6 +135,7 @@ for ((i=0;i<${#elnames[*]};i++)); do
     segfile=$segmtl
   else
     segfile=$segmtlsbn
+    snapmtlfn=~sudas/bin/localization/ashs_atlases/mtlatlas/snap/snaplabels_pm.txt
   fi
     mlabel=$(c3d $segfile -probe $loc | awk '{print $NF}')
     mlname=$(cat $snapmtlfn | sed -e 's/^[ \t]*//'  | grep "^${mlabel} " | sed -r 's/[^\"]*([\"][^\"]*[\"][,]?)[^\"]*/\1 /g')
