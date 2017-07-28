@@ -32,6 +32,7 @@ if $NOREG ; then
   :
 else
 
+:<<'NORUN'
   f=T00_${1}_mprage.nii.gz
   m=T00_${1}_tse.nii.gz
   if [ -f T00_${1}_tse.nii.gz ]; then
@@ -60,19 +61,49 @@ else
       -a 1 \
       -o [ T01_CT_to_T00_mprageANTs , T01_CT_to_T00_mprageANTs.nii.gz, T01_CT_to_T00_mprageANTs_inverse.nii.gz ]
 
-
+  
 
   ~sudas/bin/ConvertTransformFile 3 T01_CT_to_T00_mprageANTs0GenericAffine.mat \
         T01_CT_to_T00_mprageANTs0GenericAffine_RAS.mat --hm
+
+  f=T00_${1}_mprage.nii.gz
+  m=T01_${1}_CT.nii.gz
+    $reg -d $dim  \
+      -m Mattes[  $f, $m , 1 , 32, random , 0.1 ] \
+      -t Rigid[ 0.2 ] \
+      -c [1000x1000x1000,1.e-7,20]  \
+      -s 4x2x0  \
+      -r [snap.txt] \
+      -f 4x2x1 -l 1 \
+      -a 1 \
+      -o [ T01_CT_to_T00_mprageANTs_extra , T01_CT_to_T00_mprageANTs_extra.nii.gz, T01_CT_to_T00_mprageANTs_inverse_extra.nii.gz ]
+
+NORUN
+
+
+  c3d_affine_tool  composed.mat -inv -o T01_CT_to_T00_mprageANTs0GenericAffine_RAS.mat -inv -o T01_CT_to_T00_mprageANTs0GenericAffine_RAS_inv.mat
+
+# c3d_affine_tool T01_CT_to_T00_mprageANTs0GenericAffine_RAS.mat -o T01_CT_to_T00_mprageANTs0GenericAffine_RAS_orig.mat -itk snap.txt -mult -o T01_CT_to_T00_mprageANTs0GenericAffine_RAS.mat \
+#  -inv -o T01_CT_to_T00_mprageANTs0GenericAffine_RAS_inv.mat
+
+# When we generate tx outside
+  c3d T00_${1}_mprage.nii.gz T01_${1}_CT.nii.gz -reslice-matrix T01_CT_to_T00_mprageANTs0GenericAffine_RAS.mat -o T01_CT_to_T00_mprageANTs.nii.gz 
+  c3d T01_${1}_CT.nii.gz T00_${1}_mprage.nii.gz -reslice-matrix T01_CT_to_T00_mprageANTs0GenericAffine_RAS_inv.mat -o T01_CT_to_T00_mprageANTs_inverse.nii.gz
+
+# cp T01_CT_to_T00_mprageANTs_extraCollapsedComposite.h5 T01_CT_to_T00_mprageANTs_CollapsedComposite.h5
+# cp T01_CT_to_T00_mprageANTs_extraCollapsedInverseComposite.h5 T01_CT_to_T00_mprageANTs_CollapsedInverseComposite.h5
+# cp T01_CT_to_T00_mprageANTs_extra0GenericAffine.mat T01_CT_to_T00_mprageANTs_0GenericAffine.mat
+# cp T01_CT_to_T00_mprageANTs_extra.nii.gz T01_CT_to_T00_mprageANTs.nii.gz
+# cp T01_CT_to_T00_mprageANTs_inverse_extra.nii.gz T01_CT_to_T00_mprageANTs_inverse.nii.gz
+
 fi
-#c3d_affine_tool  T01_CT_to_T00_mprageANTs0GenericAffine_RAS.mat  -itk T00/sfseg/flirt_t2_to_t1/flirt_t2_to_t1_ITK.txt -inv  -mult -o T01_CT_to_T00_tseANTs_RAS.mat -inv -o T01_CT_to_T00_tseANTs_RAS_inv.mat
 # Use ANTs for T1-T2
 c3d_affine_tool  T01_CT_to_T00_mprageANTs0GenericAffine_RAS.mat T00_tse_to_T00_mprageANTs0GenericAffine_RAS.mat -inv  -mult \
   -o T01_CT_to_T00_tseANTs_RAS.mat -oitk T01_CT_to_T00_tseANTs_RAS_itk.txt \
   -inv -o T01_CT_to_T00_tseANTs_RAS_inv.mat -oitk T01_CT_to_T00_tseANTs_RAS_inv_itk.txt
 
 
-# Change for Penn subjects
+# May change segtype for Penn subjects
 c3d T00/sfseg/final/${1}_left_lfseg_${segtype}.nii.gz T00/sfseg/final/${1}_right_lfseg_${segtype}.nii.gz -add -o T00_${1}_segmentation.nii.gz
 c3d T00_${1}_mprage.nii.gz -resample 250% -as A T00/hippseg/hippo_spm/sbn_work_hipp_L/hipp_hires_seg.nii.gz -interp NN -reslice-identity \
   -push A T00/hippseg/hippo_spm/sbn_work_hipp_R/hipp_hires_seg.nii.gz -interp NN -reslice-identity -add  -trim 5mm -o T00/hippseg/hippo_spm/T00_${1}_sbnseg.nii.gz 
@@ -118,5 +149,88 @@ if [ -f T01_${1}_mprage.nii.gz ]; then
 
   c3d_affine_tool  T01_CT_to_T01_mprageANTs0GenericAffine_RAS.mat  -inv -o T01_CT_to_T01_mprageANTs0GenericAffine_RAS_inv.mat
 
+  f=T00_${1}_mprage.nii.gz
+  m=T01_${1}_mprage.nii.gz
+    $reg -d $dim  \
+      -m Mattes[  $f, $m , 1 , 32, random , 0.1 ] \
+      -t Rigid[ 0.2 ] \
+      -c [1000x1000x1000,1.e-7,20]  \
+      -s 4x2x0  \
+      -f 4x2x1 -l 1 \
+      -r [ $f, $m, 1 ] \
+      -a 1 \
+      -o [ T01_mprage_to_T00_mprageANTs , T01_mprage_to_T00_mprageANTs.nii.gz, T01_mprage_to_T00_mprageANTs_inverse.nii.gz ]
+  ~sudas/bin/ConvertTransformFile 3 T01_mprage_to_T00_mprageANTs0GenericAffine.mat \
+        T01_mprage_to_T00_mprageANTs0GenericAffine_RAS.mat --hm
+
 fi
+
+:<<'NOCOORD'
+# Save out coordinates now if VOX_coords_mother is available
+fn=VOX_coords_mother.txt
+if [ -f $fn ]; then
+# Get the electrode information from voxtool output
+elnames=($(cat $fn | awk '{print $1}')) 
+elxs=($(cat $fn | awk '{print $2}')) 
+elys=($(cat $fn | awk '{print $3}')) 
+elzs=($(cat $fn | awk '{print $4}')) 
+
+if [ ! -f electrode_snaplabel.txt ] || [ $doall == 1 ]; then
+# Make SNAP label file for electrodes 
+cp $snapelfnbase tmp.txt
+for ((i=1;i<=${#elnames[*]};i++)); do
+  el=$(cat VOX_coords_mother.txt | sed -n "${i}p" | awk '{print $1}'); 
+  cat tmp.txt | sed -e "s/\"Label ${i}\"/\"${el}\"/g" > tmp1.txt; 
+  mv tmp1.txt tmp.txt;
+  if [ $i != 1 ]; then
+    elname_num=$(echo $el | sed -e 's/[^0-9]//g')
+    # Change to handle digits in the electrode name
+    elname_num=${el##*[A-Z]}
+    elname_str=${el%${elname_num}}
+    prevelname_num=$(echo $prevel | sed -e 's/[^0-9]//g')
+    # Change to handle digits in the electrode name
+    prevelname_num=${prevel##*[A-Z]}
+    prevelname_str=${prevel%${prevelname_num}}
+    if [ "$elname_str" == "$prevelname_str" ]; then
+      midel="$prevel - $el"
+      midlabel=$(echo "${#elnames[*]} + ${i} -1 " | bc -l )
+      cat tmp.txt | sed -e "s/\"Label ${midlabel}\"/\"${midel}\"/g" > tmp1.txt; 
+      mv tmp1.txt tmp.txt;
+    fi
+  fi
+  prevel=$el
+done
+mv tmp.txt electrode_snaplabel.txt
+fi
+sub=$1
+fn=T01_${sub}_CT.nii
+c3d ${fn}.gz -o ${fn}
+echo "x,y,z,t,label,mass,volume,count" > electrode_coordinates.csv
+MATLAB_ROOT=/usr/global/matlabR2011b
+#$ -v LM_LICENSE_FILE=/usr/global/lmgrd-R2015a/licenses/network.lic.rhino2
+$MATLAB_ROOT/bin/matlab $MATOPT -nodisplay <<MAT
+  addpath ~sudas/bin/spm5
+  addpath ~sudas/bin/localization/matlab
+  coords=importdata('vox_coords.txt');
+  coords=coords';
+  pcoords=map_coords(coords,'${fn}');
+  V=spm_vol('${fn}');
+  voxvol=abs(prod(diag(V.mat)));
+  fd=fopen('electrode_coordinates.csv', 'a');
+  for i=1:size(pcoords, 2)
+    fprintf(fd, '%f,%f,%f,%d,%d,%d,%f,%d', -pcoords(1, i), -pcoords(2, i), pcoords(3, i),0, i, i, voxvol, 1);
+    fprintf(fd, '\n');
+  end
+  fclose(fd);
+  exit
+MAT
+rm -f ${fn}
+
+# Change to T1 space
+~sudas/bin/ants/antsApplyTransformsToPoints -d 3 -i electrode_coordinates.csv -o electrode_coordinates_T1.csv \
+  -t [T01_CT_to_T00_mprageANTs0GenericAffine_RAS_itk.txt,1]
+fi
+NOCOORD
+
+
 cd $oldcwd

@@ -61,7 +61,7 @@ if [ ! -f electrode_snaplabel.txt ] || [ $doall == 1 ]; then
 # Make SNAP label file for electrodes 
 cp $snapelfnbase tmp.txt
 for ((i=1;i<=${#elnames[*]};i++)); do
-  el=$(cat VOX_coords_mother.txt | sed -n "${i}p" | awk '{print $1}'); 
+  el=$(cat $fn | sed -n "${i}p" | awk '{print $1}'); 
   cat tmp.txt | sed -e "s/\"Label ${i}\"/\"${el}\"/g" > tmp1.txt; 
   mv tmp1.txt tmp.txt;
   if [ $i != 1 ]; then

@@ -1,5 +1,5 @@
 #!/bin/bash
-set -x
+set -x 
 sub=$1
 pth=cfndata/picsl/srdas
 pth=""
@@ -59,7 +59,7 @@ if [ ! -f electrode_snaplabel.txt ] || [ $doall == 1 ]; then
 # Make SNAP label file for electrodes 
 cp $snapelfnbase tmp.txt
 for ((i=1;i<=${#elnames[*]};i++)); do
-  el=$(cat VOX_coords_mother.txt | sed -n "${i}p" | awk '{print $1}'); 
+  el=$(cat $fn | sed -n "${i}p" | awk '{print $1}'); 
   cat tmp.txt | sed -e "s/\"Label ${i}\"/\"${el}\"/g" > tmp1.txt; 
   mv tmp1.txt tmp.txt;
   if [ $i != 1 ]; then
@@ -236,9 +236,11 @@ elcount=($(cat electrode_coordinates.csv | awk -F , '{print $8}'))
 elxmmT1=($(cat electrode_coordinates_T1.csv | awk -F , '{print $1}')) 
 elymmT1=($(cat electrode_coordinates_T1.csv | awk -F , '{print $2}')) 
 elzmmT1=($(cat electrode_coordinates_T1.csv | awk -F , '{print $3}')) 
+eltT1=($(cat electrode_coordinates_T1.csv | awk -F , '{print $4}')) 
 elxmmT2=($(cat electrode_coordinates_T2.csv | awk -F , '{print $1}')) 
 elymmT2=($(cat electrode_coordinates_T2.csv | awk -F , '{print $2}')) 
 elzmmT2=($(cat electrode_coordinates_T2.csv | awk -F , '{print $3}')) 
+eltT2=($(cat electrode_coordinates_T2.csv | awk -F , '{print $4}')) 
 
 scale=4;
 
@@ -257,9 +259,11 @@ for ((i=0;i<${#elnames[*]};i++)); do
   xT1=${elxmmT1[i]} 
   yT1=${elymmT1[i]}
   zT1=${elzmmT1[i]}
+  tT1=${eltT1[i]}
   xT2=${elxmmT2[i]} 
   yT2=${elymmT2[i]}
   zT2=${elzmmT2[i]}
+  tT2=${eltT2[i]}
 
 
   # Probe in native space
@@ -301,13 +305,23 @@ for ((i=0;i<${#elnames[*]};i++)); do
       midmass=$mass
       midvol=$vol
       midcount=1
+      midxT1=$(echo "scale=$scale; ( $(printf %.4f $xT1) + $(printf %.4f $prevxT1)) / 2.0" | bc -l)
+      midyT1=$(echo "scale=$scale; ( $(printf %.4f $yT1) + $(printf %.4f $prevyT1)) / 2.0" | bc -l)
+      midzT1=$(echo "scale=$scale; ( $(printf %.4f $zT1) + $(printf %.4f $prevzT1)) / 2.0" | bc -l)
+      midtT1=$(echo "scale=$scale; ( $(printf %.4f $tT1) + $(printf %.4f $prevtT1)) / 2.0" | bc -l)
+      midxT2=$(echo "scale=$scale; ( $(printf %.4f $xT2) + $(printf %.4f $prevxT2)) / 2.0" | bc -l)
+      midyT2=$(echo "scale=$scale; ( $(printf %.4f $yT2) + $(printf %.4f $prevyT2)) / 2.0" | bc -l)
+      midzT2=$(echo "scale=$scale; ( $(printf %.4f $zT2) + $(printf %.4f $prevzT2)) / 2.0" | bc -l)
+      midtT2=$(echo "scale=$scale; ( $(printf %.4f $tT2) + $(printf %.4f $prevtT2)) / 2.0" | bc -l)
     
       # Probe in CT space
       loc=${midx}x${midy}x${midz}mm
+      locT1=${midxT1}x${midyT1}x${midzT1}mm
+      locT2=${midxT2}x${midyT2}x${midzT2}mm
 
-      mlabel=$(c3d $segmtl -interp NN -probe $loc | awk '{print $NF}')
+      mlabel=$(c3d $segmtlT2 -interp NN -probe $locT2 | awk '{print $NF}')
       mlname=$(cat $snapmtlfn | sed -e 's/^[ \t]*//'  | grep "^${mlabel} " | sed -r 's/[^\"]*([\"][^\"]*[\"][,]?)[^\"]*/\1 /g')
-      wlabel=$(c3d $segwb -interp NN -probe $loc | awk '{print $NF}')
+      wlabel=$(c3d $segwbT1 -interp NN -probe $locT1 | awk '{print $NF}')
       lname=$(cat $snapwbfn | grep "^${wlabel}," | cut -f 2 -d ",")
       if [[ $lname == *Clear\ Label* ]]; then
         lname="Not in segmented brain"
@@ -319,7 +333,7 @@ for ((i=0;i<${#elnames[*]};i++)); do
       fi
 
       echo ${midx}, ${midy}, ${midz}, ${midt}, ${midlabel}, ${midmass}, ${midvol}, ${midcount}  >> electrode_coordinates_mid.csv
-      echo ${midel}, $alname >> electrodenames_mid.csv
+      echo ${midel}, $alname >> electrodenames_mid_native.csv
     fi
     
   fi
@@ -332,6 +346,14 @@ for ((i=0;i<${#elnames[*]};i++)); do
   prevmass=${elmass[i]}
   prevvol=${elvol[i]}
   prevcount=${elcount[i]}
+  prevxT1=${elxmmT1[i]} 
+  prevyT1=${elymmT1[i]}
+  prevzT1=${elzmmT1[i]}
+  prevtT1=${eltT1[i]}
+  prevxT2=${elxmmT2[i]} 
+  prevyT2=${elymmT2[i]}
+  prevzT2=${elzmmT2[i]}
+  prevtT2=${eltT2[i]}
 
 done
     
@@ -341,8 +363,8 @@ paste -d "," electrodenames_mid.csv electrode_coordinates_mid.csv > electrodenam
 cp electrode_coordinates_mid.csv electrode_coordinates_mid_CT.csv
 
 # Add electrode names on some files
-cat electrodenames_native.csv | cut -f -d "," > namesonly.csv
-if [ ! -f T00/thickness/CorticalThicknessNormalizedToTemplate.nii.gz ]; then
+cat electrodenames_native.csv | cut -f 1 -d "," > namesonly.csv
+if [ -f T00/thickness/${sub}CorticalThicknessNormalizedToTemplate.nii.gz ]; then
   paste -d "," namesonly.csv electrode_coordinates_mni.csv > electrodenames_coordinates_mni.csv
 fi
 
@@ -384,6 +406,7 @@ cat electrode_coordinates_mni_mid.csv | awk -F "," '{print $1,$2,$3,$5}' > lmMNI
 c3d $CH2 -scale 0 -landmarks-to-spheres lmMNI_mid.txt 2 -o T00_${sub}_MNIelectrodelabels_spheres_mid.nii.gz 
 
 paste -d "," electrodenames_mid.csv electrode_coordinates_mni_mid.csv > electrodelabels_and_coordinates_mni_mid.csv
+paste -d "," electrodenames_coordinates_mid.csv electrode_coordinates_T1_mid.csv > electrodenames_coordinates_native_and_T1_mid.csv
 
 :<<'COMMMM'
     echo $x_new $y_new $z_new $line_num >> newmni.txt
