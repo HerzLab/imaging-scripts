@@ -8,7 +8,7 @@ fi
 
 USEMANUAL=false
 if [ $# -lt 1 ]; then
-  echo Usage: $0 SubjectID [ISREG]
+  echo Usage: $0 SubjectID [ISREG] [MANUALTransformFile]
   exit 1
 fi
 if [ $# -eq 2 ]; then
@@ -19,8 +19,9 @@ else
 fi
 if [ $# -eq 3 ]; then
   echo "Using manual registration"
-  NOREG=true
+  NOREG=false
   USEMANUAL=true
+  MANMAT=$3
 fi
 
 export ANTSPATH=~sudas/bin/ants/
@@ -38,26 +39,33 @@ if $NOREG ; then
   :
 else
 :
+  if $USEMANUAL; then
+    c3d_affine_tool -itk $MANMAT -o T01_CT_to_T00_mprageANTs0GenericAffine_RAS.mat \
+      -inv -o T01_CT_to_T00_mprageANTs0GenericAffine_RAS_inv.mat
+    c3d T00_${1}_mprage.nii.gz T01_${1}_CT.nii.gz -reslice-matrix T01_CT_to_T00_mprageANTs0GenericAffine_RAS.mat -o T01_CT_to_T00_mprageANTs.nii.gz 
+    c3d T01_${1}_CT.nii.gz T00_${1}_mprage.nii.gz -reslice-matrix T01_CT_to_T00_mprageANTs0GenericAffine_RAS_inv.mat -o T01_CT_to_T00_mprageANTs_inverse.nii.gz
+  else
 
-  f=T00_${1}_mprage.nii.gz
-  m=T00_${1}_tse.nii.gz
-  if [ -f T00_${1}_tse.nii.gz ]; then
-    $reg -d $dim  \
-      -m Mattes[  $f, $m , 1 , 32, random , 0.1 ] \
-      -t Rigid[ 0.2 ] \
-      -c [1000x1000x1000,1.e-7,20]  \
-      -s 4x2x0  \
-      -f 4x2x1 -l 1 \
-      -r [ $f, $m, 1 ] \
-      -a 1 $mask \
-      -o [ T00_tse_to_T00_mprageANTs , T00_tse_to_T00_mprageANTs.nii.gz, T00_tse_to_T00_mprageANTs_inverse.nii.gz ]
-    ~sudas/bin/ConvertTransformFile 3 T00_tse_to_T00_mprageANTs0GenericAffine.mat \
+
+    f=T00_${1}_mprage.nii.gz
+    m=T00_${1}_tse.nii.gz
+    if [ -f T00_${1}_tse.nii.gz ]; then
+      $reg -d $dim  \
+        -m Mattes[  $f, $m , 1 , 32, random , 0.1 ] \
+        -t Rigid[ 0.2 ] \
+        -c [1000x1000x1000,1.e-7,20]  \
+        -s 4x2x0  \
+        -f 4x2x1 -l 1 \
+        -r [ $f, $m, 1 ] \
+        -a 1 $mask \
+        -o [ T00_tse_to_T00_mprageANTs , T00_tse_to_T00_mprageANTs.nii.gz, T00_tse_to_T00_mprageANTs_inverse.nii.gz ]
+      ~sudas/bin/ConvertTransformFile 3 T00_tse_to_T00_mprageANTs0GenericAffine.mat \
         T00_tse_to_T00_mprageANTs0GenericAffine_RAS.mat --hm
-  fi
+    fi
 
 
-  f=T00_${1}_mprage.nii.gz
-  m=T01_${1}_CT.nii.gz
+    f=T00_${1}_mprage.nii.gz
+    m=T01_${1}_CT.nii.gz
     $reg -d $dim  \
       -m Mattes[  $f, $m , 1 , 32, random , 0.1 ] \
       -t Rigid[ 0.2 ] \
@@ -70,7 +78,7 @@ else
 
   
 
-  ~sudas/bin/ConvertTransformFile 3 T01_CT_to_T00_mprageANTs0GenericAffine.mat \
+    ~sudas/bin/ConvertTransformFile 3 T01_CT_to_T00_mprageANTs0GenericAffine.mat \
         T01_CT_to_T00_mprageANTs0GenericAffine_RAS.mat --hm
 
 :<<'NORUN'
@@ -106,6 +114,7 @@ NORUN
 # cp T01_CT_to_T00_mprageANTs_extra0GenericAffine.mat T01_CT_to_T00_mprageANTs_0GenericAffine.mat
 # cp T01_CT_to_T00_mprageANTs_extra.nii.gz T01_CT_to_T00_mprageANTs.nii.gz
 # cp T01_CT_to_T00_mprageANTs_inverse_extra.nii.gz T01_CT_to_T00_mprageANTs_inverse.nii.gz
+  fi
 
 fi
 # Use ANTs for T1-T2
