@@ -6,6 +6,7 @@ if [ -z $RAMROOT ]; then
   exit 1
 fi
 
+USEMANUAL=false
 if [ $# -lt 1 ]; then
   echo Usage: $0 SubjectID [ISREG]
   exit 1
@@ -15,6 +16,11 @@ if [ $# -eq 2 ]; then
   NOREG=true
 else
   NOREG=false
+fi
+if [ $# -eq 3 ]; then
+  echo "Using manual registration"
+  NOREG=true
+  USEMANUAL=true
 fi
 
 export ANTSPATH=~sudas/bin/ants/
@@ -31,8 +37,8 @@ export PATH=$ANTSPATH:~sudas/bin:$PATH
 if $NOREG ; then
   :
 else
+:
 
-:<<'NORUN'
   f=T00_${1}_mprage.nii.gz
   m=T00_${1}_tse.nii.gz
   if [ -f T00_${1}_tse.nii.gz ]; then
@@ -48,6 +54,7 @@ else
     ~sudas/bin/ConvertTransformFile 3 T00_tse_to_T00_mprageANTs0GenericAffine.mat \
         T00_tse_to_T00_mprageANTs0GenericAffine_RAS.mat --hm
   fi
+
 
   f=T00_${1}_mprage.nii.gz
   m=T01_${1}_CT.nii.gz
@@ -66,6 +73,7 @@ else
   ~sudas/bin/ConvertTransformFile 3 T01_CT_to_T00_mprageANTs0GenericAffine.mat \
         T01_CT_to_T00_mprageANTs0GenericAffine_RAS.mat --hm
 
+:<<'NORUN'
   f=T00_${1}_mprage.nii.gz
   m=T01_${1}_CT.nii.gz
     $reg -d $dim  \
@@ -80,15 +88,18 @@ else
 
 NORUN
 
+# T1-T2 manual
+# c3d_affine_tool composed.mat -o T00_tse_to_T00_mprageANTs0GenericAffine_RAS.mat -inv T00_tse_to_T00_mprageANTs0GenericAffine_RAS_inv.mat
 
-  c3d_affine_tool  composed.mat -inv -o T01_CT_to_T00_mprageANTs0GenericAffine_RAS.mat -inv -o T01_CT_to_T00_mprageANTs0GenericAffine_RAS_inv.mat
+# CT manual
+#  c3d_affine_tool  composed.mat -inv -o T01_CT_to_T00_mprageANTs0GenericAffine_RAS.mat -inv -o T01_CT_to_T00_mprageANTs0GenericAffine_RAS_inv.mat
 
 # c3d_affine_tool T01_CT_to_T00_mprageANTs0GenericAffine_RAS.mat -o T01_CT_to_T00_mprageANTs0GenericAffine_RAS_orig.mat -itk snap.txt -mult -o T01_CT_to_T00_mprageANTs0GenericAffine_RAS.mat \
 #  -inv -o T01_CT_to_T00_mprageANTs0GenericAffine_RAS_inv.mat
 
 # When we generate tx outside
-  c3d T00_${1}_mprage.nii.gz T01_${1}_CT.nii.gz -reslice-matrix T01_CT_to_T00_mprageANTs0GenericAffine_RAS.mat -o T01_CT_to_T00_mprageANTs.nii.gz 
-  c3d T01_${1}_CT.nii.gz T00_${1}_mprage.nii.gz -reslice-matrix T01_CT_to_T00_mprageANTs0GenericAffine_RAS_inv.mat -o T01_CT_to_T00_mprageANTs_inverse.nii.gz
+#  c3d T00_${1}_mprage.nii.gz T01_${1}_CT.nii.gz -reslice-matrix T01_CT_to_T00_mprageANTs0GenericAffine_RAS.mat -o T01_CT_to_T00_mprageANTs.nii.gz 
+#  c3d T01_${1}_CT.nii.gz T00_${1}_mprage.nii.gz -reslice-matrix T01_CT_to_T00_mprageANTs0GenericAffine_RAS_inv.mat -o T01_CT_to_T00_mprageANTs_inverse.nii.gz
 
 # cp T01_CT_to_T00_mprageANTs_extraCollapsedComposite.h5 T01_CT_to_T00_mprageANTs_CollapsedComposite.h5
 # cp T01_CT_to_T00_mprageANTs_extraCollapsedInverseComposite.h5 T01_CT_to_T00_mprageANTs_CollapsedInverseComposite.h5

@@ -14,8 +14,8 @@ suff=""
 # Subject id passed on the command line
 sid=$1
 
-ASHS_ROOT=~sudas/bin/localization/ashs-fast
-ATLAS=~sudas/bin/localization/ashs_atlases/mtlatlas-fast
+# ASHS_ROOT=~sudas/bin/localization/ashs-fastashs
+# ATLAS=~sudas/bin/localization/ashs_atlases/mtlatlas-ashs-fast
 ASHS_ROOT=~sudas/bin/localization/ashs
 ATLAS=~sudas/bin/localization/ashs_atlases/mtlatlas
 export ASHS_ROOT

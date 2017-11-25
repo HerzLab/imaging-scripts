@@ -359,7 +359,7 @@ done
     
 paste -d "," electrodenames_native.csv electrode_coordinates_native.csv > electrodenames_coordinates_native.csv
 paste -d ","  electrodenames_coordinates_native.csv electrode_coordinates_T1.csv > electrodenames_coordinates_native_and_T1.csv
-paste -d "," electrodenames_mid.csv electrode_coordinates_mid.csv > electrodenames_coordinates_mid.csv
+paste -d "," electrodenames_mid_native.csv electrode_coordinates_mid.csv > electrodenames_coordinates_mid.csv
 cp electrode_coordinates_mid.csv electrode_coordinates_mid_CT.csv
 
 # Add electrode names on some files
@@ -405,7 +405,7 @@ c3d T01_${sub}_CT.nii.gz -scale 0 -landmarks-to-spheres lmCT_mid.txt 2 -o T01_${
 cat electrode_coordinates_mni_mid.csv | awk -F "," '{print $1,$2,$3,$5}' > lmMNI_mid.txt
 c3d $CH2 -scale 0 -landmarks-to-spheres lmMNI_mid.txt 2 -o T00_${sub}_MNIelectrodelabels_spheres_mid.nii.gz 
 
-paste -d "," electrodenames_mid.csv electrode_coordinates_mni_mid.csv > electrodelabels_and_coordinates_mni_mid.csv
+paste -d "," electrodenames_mid_native.csv electrode_coordinates_mni_mid.csv > electrodelabels_and_coordinates_mni_mid.csv
 paste -d "," electrodenames_coordinates_mid.csv electrode_coordinates_T1_mid.csv > electrodenames_coordinates_native_and_T1_mid.csv
 
 :<<'COMMMM'

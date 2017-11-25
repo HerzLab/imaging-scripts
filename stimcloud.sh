@@ -21,7 +21,7 @@ fn=closedloop_stimlocations.csv
 # fn=teststim.csv
 N=0
 echo $(cat $fn | sed -n '1p'),MNI_x,MNI_y,MNI_z,T1_x,T1_y,T1_z,CT_x,CT_y,CT_z,FS_x,FS_y,FS_z > ${tsub}_allcoords.csv
-cat $fn | sed -n '2,$p' | while read line; do
+cat $fn | sed -n '2,$p' | grep R1033D | while read line; do
   echo $line
   sub=$(echo $line | cut -f 1 -d ",")
   contact=$(echo $line | cut -f 2 -d ",")
