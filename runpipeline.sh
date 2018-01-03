@@ -1,7 +1,8 @@
 if [ $# -lt 2 ]; then
   echo Usage: $0 stage SubjectID [optarg]
+  echo "All optional arguments are passed to qsub. Type \"man qsub\" for further details."
   echo Example: $0 coreg R1001P [NOREG]
-  echo Example: $0 loc R1001P
+  echo Example: $0 loc R1001P [-M anon@my_email_server.com]
   echo Example: $0 norm R1001P
   echo Example: $0 walk R1001P
   exit 1
