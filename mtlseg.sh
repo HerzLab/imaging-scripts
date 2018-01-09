@@ -1,15 +1,41 @@
 #!/bin/bash 
 # set -x
 
+mail_result() {
+    if [ #? == 0 ] ;then
+      result='was successful';
+    else
+       result='failed';
+    fi
+    message="Whole-brain segmentation for subject ${1} ${result}"
+    echo $message | mail -s "Whole-brain segmentation" ${2}
+}
+
+
 if [ -z $RAMROOT ]; then
   echo "Please define RAMROOT to point to the top level image analysis directory"
   exit 1
 fi
 
 if [ $# != 1 ]; then
-  echo Usage: $0 SubjectID
+  echo Usage: $0 [-M email_address] SubjectID
   exit 1
 fi
+
+while getopts ":M:" opt; do
+    case ${opt} in
+    M )
+        shift $((OPTIND-1))
+        mail_str="mail_result ${1} ${OPTARG}"
+        ;;
+    \? )
+        mail_str=''
+        ;;
+    \: ) mail_str=''
+    ;;
+    esac
+done
+
 suff=""
 # Subject id passed on the command line
 sid=$1
@@ -52,9 +78,10 @@ for ((i=0;i<${#IDS[*]};i++)); do
       mkdir -p $WDIR/dump
 
 #      qsub -q RAM.q -j y -o $WDIR/dump -cwd -V -N ad"$(echo ${id} | sed -e 's/_S_//g')" \
-      $ASHS_ROOT/bin/ashs_main.sh \
+      { $ASHS_ROOT/bin/ashs_main.sh \
         -Q -q "-q RAM.q -l h_vmem=10.1G,s_vmem=10G" \
-        -N -a $ATLAS -s 0-7 -d -T -I $id -g $MPRAGE -f $TSE -w $WDIR &
+        -N -a $ATLAS -s 0-7 -d -T -I $id -g $MPRAGE -f $TSE -w $WDIR ; \
+         eval ${mail_str}; } &
 # -N
 # -Q -q "-l h_vmem=7.1G,s_vmem=7G" \
 
