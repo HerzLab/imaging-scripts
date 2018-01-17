@@ -7,8 +7,17 @@ binaries in ~sudas.
 ## Emails on job completion
 
 Three scripts have the option to email the user when they complete:
-```mtlseg.sh```, ```wholebrainseg.sh```, and ```runpipeline.sh```.
-```mtlseg.sh``` and ```runpipeline.sh``` send mail to the user's account
-on rhino by default, while ```wholebrainseg.sh``` does not send mail by
-default. In all three cases, calling the script with ``` -M email@host```
-will send an email to the address specified when the script finishes running.
+```mtlseg.sh```, ```wholebrainseg.sh```, and ```runpipeline.sh```. The
+syntax of these commands is now:
+
+```bash
+COMMAND_NAME [-M email_address] ARGS
+```
+
+Note that the ```-M``` option must come before any non-optional arguments.
+
+To see a usage message, use either of the following forms:
+```bash
+COMMAND_NAME
+COMMAND_NAME -h
+```
