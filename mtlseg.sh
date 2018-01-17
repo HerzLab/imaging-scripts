@@ -7,22 +7,25 @@ mail_result() {
     else
        result='failed'
     fi
-    message="Whole-brain segmentation for subject ${1} ${result}"
-    echo $message | mail -s "Whole-brain segmentation" -r ${USER}@rhino2.psych.upenn.edu ${2}
+    message="MTL segmentation for subject ${1} ${result}"
+    echo $message | mail -s "MTL segmentation" -r ${USER}@rhino2.psych.upenn.edu ${2}
 }
 
+usage () {
+  echo Usage: $0 [-M email_address] SubjectID
 
+}
 if [ -z $RAMROOT ]; then
   echo "Please define RAMROOT to point to the top level image analysis directory"
   exit 1
 fi
 
 if [ $# != 1 ]; then
-  echo Usage: $0 [-M email_address] SubjectID
+  usage
   exit 1
 fi
 
-while getopts ":M:" opt; do
+while getopts ":M:h" opt; do
     case ${opt} in
     M )
         shift $((OPTIND-1))

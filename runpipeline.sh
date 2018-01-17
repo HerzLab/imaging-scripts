@@ -6,8 +6,8 @@ mail_result() {
     else
        result='failed'
     fi
-    message="Whole-brain segmentation for subject ${1} ${result}"
-    echo $message | mail -s "Whole-brain segmentation" -r ${USER}@rhino2.psych.upenn.edu ${2}
+    message="${1} command for subject ${2} ${result}"
+    echo $message | mail -s "Whole-brain segmentation" -r ${USER}@rhino2.psych.upenn.edu ${3}
 }
 
 
@@ -34,7 +34,7 @@ while getopts ':M:' opts; do
     case ${opts} in
         M )
             shift $((OPTIND-1))
-            mail_str="mail_result "${1}_${2}" ${OPTARG}"
+            mail_str="mail_result ${1} ${2} ${OPTARG}"
             ;;
         \?) ;;
         \:);;

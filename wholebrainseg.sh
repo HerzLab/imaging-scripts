@@ -11,23 +11,26 @@ mail_result() {
     echo $message | mail -s "Whole-brain segmentation" ${2}
 }
 
-
+usage(){
+    echo Usage: $0 [-m email_address] SubjectID [brain]
+}
 if [ -z $RAMROOT ]; then
   echo "Please define RAMROOT to point to the top level image analysis directory"
   exit 1
 fi
 
 if [ $# -lt 1 ]; then
-  echo Usage: $0 [-m email_address] SubjectID [brain]
+  usage
   exit 1
 fi
 
-while getopts ":M:" opt; do
+while getopts ":M:h" opt; do
     case ${opt} in
     M )
         shift $((OPTIND-1))
         mail_str="mail_result ${1} ${OPTARG}"
         ;;
+    h ) usage ;;
     \? )
         mail_str=''
         ;;
