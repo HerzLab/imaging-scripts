@@ -8,7 +8,7 @@ mail_result() {
        result='failed'
     fi
     message="MTL segmentation for subject ${1} ${result}"
-    echo $message | mail -s "MTL segmentation" -r ${USER}@rhino2.psych.upenn.edu ${2}
+    echo $message | mail -s "MTL segmentation Completed" -r ${USER}@rhino2.psych.upenn.edu ${2}
 }
 
 usage () {

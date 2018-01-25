@@ -8,7 +8,7 @@ mail_result() {
        result='failed'
     fi
     message="Whole-brain segmentation for subject ${1} ${result}"
-    echo $message | mail -s "Whole-brain segmentation" ${2}
+    echo $message | mail -s "Whole-brain segmentation Completed" ${2}
 }
 
 usage(){

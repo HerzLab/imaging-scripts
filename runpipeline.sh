@@ -6,8 +6,8 @@ mail_result() {
     else
        result='failed'
     fi
-    message="${1} command for subject ${2} ${result}"
-    echo $message | mail -s "Whole-brain segmentation" -r ${USER}@rhino2.psych.upenn.edu ${3}
+    message="Command ${1} for subject ${2} ${result}"
+    echo $message | mail -s "Imaging pipeline ${1} completed" -r ${USER}@rhino2.psych.upenn.edu ${3}
 }
 
 
