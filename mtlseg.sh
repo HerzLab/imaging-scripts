@@ -2,7 +2,7 @@
 # set -x
 
 mail_result() {
-    if [ #? == 0 ] ;then
+    if [ $? == 0 ] ;then
       result='was successful'
     else
        result='failed'
@@ -20,7 +20,7 @@ if [ -z $RAMROOT ]; then
   exit 1
 fi
 
-if [ $# != 1 ]; then
+if [ $# -lt 1 ]; then
   usage
   exit 1
 fi

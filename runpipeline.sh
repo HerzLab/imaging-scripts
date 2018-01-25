@@ -1,7 +1,7 @@
 #! /bin/bash
 
 mail_result() {
-    if [ #? == 0 ] ;then
+    if [ $? == 0 ] ;then
       result='was successful'
     else
        result='failed'
