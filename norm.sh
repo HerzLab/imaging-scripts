@@ -72,27 +72,14 @@ done
 
 sub=$1
 fn=T01_${sub}_CT.nii
-c3d ${fn}.gz -o ${fn}
-echo "x,y,z,t,label,mass,volume,count" > flipped_updated_electrode_coordinates.csv
-MATLAB_ROOT=/usr/global/matlabR2011b
-#$ -v LM_LICENSE_FILE=/usr/global/lmgrd-R2015a/licenses/network.lic.rhino2
-$MATLAB_ROOT/bin/matlab $MATOPT -nodisplay <<MAT
-  addpath ~sudas/bin/spm5
-  addpath ~sudas/bin/localization/matlab
-  coords=importdata('flipped_updated_vox_coords.txt');
-  coords=coords';
-  pcoords=map_coords(coords,'${fn}');
-  V=spm_vol('${fn}');
-  voxvol=abs(prod(diag(V.mat)));
-  fd=fopen('flipped_updated_electrode_coordinates.csv', 'a');
-  for i=1:size(pcoords, 2)
-    fprintf(fd, '%f,%f,%f,%d,%d,%d,%f,%d', -pcoords(1, i), -pcoords(2, i), pcoords(3, i),0, i, i, voxvol, 1);
-    fprintf(fd, '\n');
-  end
-  fclose(fd);
-  exit
-MAT
-rm -f ${fn}
+
+if [ -z ${SDIR} ]; then
+    SDIR=$(dirname $0 )
+fi
+
+${SDIR}/rastransform.py flipped_updated_vox_coords.txt \
+ ${fn}.gz flipped_updated_electrode_coordinates.csv
+
 if [ ! -f T01_CT_to_T00_mprageANTs0GenericAffine_RAS_itk.txt ]; then
   c3d_affine_tool T01_CT_to_T00_mprageANTs0GenericAffine_RAS.mat -oitk T01_CT_to_T00_mprageANTs0GenericAffine_RAS_itk.txt
 fi
