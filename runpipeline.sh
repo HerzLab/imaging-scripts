@@ -58,3 +58,4 @@ done
 
 cd $oldcwd
 
+source deactivate
