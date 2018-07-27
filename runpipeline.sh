@@ -34,6 +34,9 @@ while getopts ':M:' opts; do
     esac
 done
 
+# TODO: make this more portable
+source activate event_creation
+
 oldcwd=$PWD
 SDIR=$(dirname $0)
 cd $SDIR

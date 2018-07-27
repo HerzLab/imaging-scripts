@@ -1,4 +1,4 @@
-#! ~/miniconda3/envs/event_creation/bin/python
+#! /usr/bin/env python
 
 import numpy as np
 from numpy.testing import assert_almost_equal
