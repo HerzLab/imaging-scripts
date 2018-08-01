@@ -84,7 +84,7 @@ ${SDIR}/rastransform.py flipped_updated_vox_coords.txt \
  ${fn}.gz flipped_updated_electrode_coordinates.csv
 
 if [ ! -f T01_CT_to_T00_mprageANTs0GenericAffine_RAS_itk.txt ]; then
-  c3d_affine_tool T01_CT_to_T00_mprageANTs0GenericAffine_RAS.mat -oitk T01_CT_to_T00_mprageANTs0GenericAffine_RAS_itk.txt
+  ~sudas/bin/c3d_affine_tool T01_CT_to_T00_mprageANTs0GenericAffine_RAS.mat -oitk T01_CT_to_T00_mprageANTs0GenericAffine_RAS_itk.txt
 fi
 
 ~sudas/bin/ants/antsApplyTransformsToPoints -d 3 -i flipped_updated_electrode_coordinates.csv -o flipped_updated_electrode_coordinates_mni.csv \
