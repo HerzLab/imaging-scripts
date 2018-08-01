@@ -1,5 +1,5 @@
 #!/bin/bash
-set -x 
+set -ex
 sub=$1
 pth=cfndata/picsl/srdas
 pth=""

@@ -1,7 +1,7 @@
 #!/bin/bash
 #$ -S /bin/bash
 #./ProcessADNISubject.sh $OUTDIR/../../${tp}_${sub}_mprage.nii.gz $OUTDIR/ $sub
-
+set -ex
 
 sub=$1
 FILE=$PWD/T00_${sub}_mprage.nii.gz
@@ -73,9 +73,12 @@ done
 sub=$1
 fn=T01_${sub}_CT.nii
 
+echo "SDIR=${SDIR}"
+
 if [ -z ${SDIR} ]; then
     SDIR=$(dirname $0 )
 fi
+
 
 ${SDIR}/rastransform.py flipped_updated_vox_coords.txt \
  ${fn}.gz flipped_updated_electrode_coordinates.csv
