@@ -22,16 +22,16 @@ def map_coords(coordinates, nifti_file):
     # being stupid AF
     transform[:3, -1] -= np.diag(transform)[:3]
 
+    transform = np.matrix(transform)
+
     if coordinates.shape[0] == 3:
         coordinates = np.concatenate([coordinates,
                                       np.ones((1,coordinates.shape[1]))],)
     coordinates = np.matrix(coordinates)
 
-    assert coordinates.shape[0] == 4
-
     voxvol = np.abs(np.prod(np.diag(transform)))
 
-    ras_coords = transform.astype(np.matrix) * coordinates
+    ras_coords = transform * coordinates
 
     return ras_coords[:3, :], voxvol
 
