@@ -1,7 +1,7 @@
 #!/bin/bash
 #$ -S /bin/bash
 #./ProcessADNISubject.sh $OUTDIR/../../${tp}_${sub}_mprage.nii.gz $OUTDIR/ $sub
-set -ex
+set -x
 
 sub=$1
 FILE=$PWD/T00_${sub}_mprage.nii.gz
