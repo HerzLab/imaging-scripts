@@ -39,59 +39,7 @@ else
 fi
 
 cd $OUT_DIR/../..
-fn_mono=/data/eeg/$sub/tal/VOX_coords_mother_dykstra.txt
-fn_bi=/data/eeg/$sub/tal/VOX_coords_mother_dykstra_bipolar.txt
-fn=updated_vox_coords.txt
-
-cat $fn_mono $fn_bi > $fn
-
-
-elnames=($(cat $fn | awk '{print $1}'))
-elxs=($(cat $fn | awk '{print $2}'))
-elys=($(cat $fn | awk '{print $3}'))
-elzs=($(cat $fn | awk '{print $4}'))
-
-cat $fn | awk '{print $1}' > updated_names.txt
-
-> flipped_${fn}
-
-for ((i=0;i<${#elnames[*]};i++)); do
-  el=${elnames[i]}
-  x=$(expr ${elxs[i]}  )
-  if [ -f flippedCT.flag ]; then
-    x=$(expr 512 - ${elxs[i]}  )
-  fi
-  y=$(expr ${elys[i]}  )
-  z=$(expr ${elzs[i]}  )
-
-
-  # Add voxel coordinates to a file so that we can transform to physical coordinates later
-  echo $x $y $z >> flipped_${fn}
-
-done
-
-sub=$1
-fn=T01_${sub}_CT.nii
-
-echo "SDIR=${SDIR}"
-
-if [ -z ${SDIR} ]; then
-    SDIR=$(dirname $0 )
-fi
-
-
-${SDIR}/rastransform.py flipped_updated_vox_coords.txt \
- ${fn}.gz flipped_updated_electrode_coordinates.csv
 
 if [ ! -f T01_CT_to_T00_mprageANTs0GenericAffine_RAS_itk.txt ]; then
   ~sudas/bin/c3d_affine_tool T01_CT_to_T00_mprageANTs0GenericAffine_RAS.mat -oitk T01_CT_to_T00_mprageANTs0GenericAffine_RAS_itk.txt
 fi
-
-~sudas/bin/ants/antsApplyTransformsToPoints -d 3 -i flipped_updated_electrode_coordinates.csv -o flipped_updated_electrode_coordinates_mni.csv \
-  -t [T01_CT_to_T00_mprageANTs0GenericAffine_RAS_itk.txt,1] -t [T00/thickness/${sub}TemplateToSubject0GenericAffine.mat,1]\
-  -t T00/thickness/${sub}TemplateToSubject1InverseWarp.nii.gz -t [$faffine,1] -t $finversewarp
-cat flipped_updated_electrode_coordinates_mni.csv | sed -n '2,$p' | awk -F',' '{print -1*$1, -1*$2, $3}' OFS=',' > test.csv
-mv test.csv flipped_updated_electrode_coordinates_mni.csv
-
-paste -d "," updated_names.txt flipped_updated_electrode_coordinates_mni.csv > monopolar_bipolar_updated_mni.csv
-
