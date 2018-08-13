@@ -12,7 +12,8 @@ mail_result() {
 }
 
 usage(){
-    echo Usage: $0 [-m email_address] SubjectID [brain]
+    echo Usage: $0 [-M email_address] SubjectID [brain]
+    exit 1
 }
 if [ -z $RAMROOT ]; then
   echo "Please define RAMROOT to point to the top level image analysis directory"
@@ -21,7 +22,6 @@ fi
 
 if [ $# -lt 1 ]; then
   usage
-  exit 1
 fi
 
 while getopts ":M:h" opt; do
@@ -30,7 +30,7 @@ while getopts ":M:h" opt; do
         shift $((OPTIND-1))
         mail_str="mail_result ${1} ${OPTARG}"
         ;;
-    h ) usage ;;
+    h ) usage;;
     \? )
         mail_str=''
         ;;
