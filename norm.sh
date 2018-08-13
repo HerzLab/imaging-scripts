@@ -38,8 +38,3 @@ else
   echo "$sub MNI normalization and thickness pipeline done"
 fi
 
-cd $OUT_DIR/../..
-
-if [ ! -f T01_CT_to_T00_mprageANTs0GenericAffine_RAS_itk.txt ]; then
-  ~sudas/bin/c3d_affine_tool T01_CT_to_T00_mprageANTs0GenericAffine_RAS.mat -oitk T01_CT_to_T00_mprageANTs0GenericAffine_RAS_itk.txt
-fi
