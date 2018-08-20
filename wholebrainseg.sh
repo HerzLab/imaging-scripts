@@ -1,4 +1,5 @@
-#!/bin/bash 
+#!/bin/bash
+#$ -S /bin/bash
 # set -x
 
 mail_result() {
@@ -52,6 +53,7 @@ IDS=($sid)
 
 
 if [ $# == 2 ]; then
+  echo "Using brain from Brain Extraction"
   suff=_brainBrainExtractionBrain
   atlassuff=_brainonly
 fi
