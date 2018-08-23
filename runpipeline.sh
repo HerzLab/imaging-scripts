@@ -34,10 +34,13 @@ while getopts ':M:' opts; do
     esac
 done
 
+# TODO: make this more portable
+source activate event_creation
+
 oldcwd=$PWD
 SDIR=$(dirname $0)
 cd $SDIR
-SDIR=$PWD
+export SDIR=$PWD
 
 OPTIND=1
 
@@ -45,13 +48,12 @@ stg=$1
 
 shift
 for i in $1;do
-  cd $RAMROOT/${i}; 
-  #rm ${stg}.log
-  # qsub -P RAM_DCC -q matlab.q -l h_vmem=30.1G,s_vmem=30G -cwd -j y -o ${stg}.log -V -N ${stg}$i $SDIR/${stg}.sh $*; 
-  { qsub  -q matlab.q -l h_vmem=30.1G,s_vmem=30G -cwd -sync y -j y -o ${stg}.log -V -N ${stg}$i $SDIR/${stg}.sh "$@";
+  cd $RAMROOT/${i}
+  echo "working in ${PWD}"
+  rm ${stg}.log
+  # qsub -P RAM_DCC -q RAM.q -l h_vmem=30.1G,s_vmem=30G -cwd -j y -o ${stg}.log -V -N ${stg}$i $SDIR/${stg}.sh $*;
+  { qsub -q RAM.q -l h_vmem=30.1G,s_vmem=30G -cwd -sync y -j y -o ${stg}.log -V -N ${stg}$i $SDIR/${stg}.sh "$@";
     eval ${mail_str}; } &
   # no DCC #  qsub -l h_vmem=20.1G,s_vmem=20G -cwd -j y -o ${stg}.log -V -N ${stg}$i $SDIR/${stg}.sh $*; 
 done
-
-cd $oldcwd
 
