@@ -1,4 +1,4 @@
-RAM=/data10/RAM/subjects
+RAM=/oceanus/collab/herz-lab/raw_data/kahana/subjects/
 #for dd in $RAM/*; do 
  # ID=${dd##*/}
   # for ID in $(cat mniqa.txt michal_mni_list.txt | grep ok | grep -v _| grep -v lesion | grep -v again | cut -c 1-6 | xargs); do
@@ -21,4 +21,4 @@ RAM=/data10/RAM/subjects
   fi; 
 done
 exit
-for i in /data10/RAM/subjects/R*/imaging/R*/electrode_path_t1.txt; do sub=`echo $i | cut -f 5 -d "/"`; if [ -f /data10/RAM/subjects/$sub/imaging/$sub/T00_${sub}_mprage/T00_${sub}_mprage_wholebrainseg.nii.gz ]; then cat $i >> all_electrode_paths_t1.txt; fi; done
+for i in /oceanus/collab/herz-lab/raw_data/kahana/subjects/R*/imaging/R*/electrode_path_t1.txt; do sub=`echo $i | cut -f 5 -d "/"`; if [ -f /oceanus/collab/herz-lab/raw_data/kahana/subjects/$sub/imaging/$sub/T00_${sub}_mprage/T00_${sub}_mprage_wholebrainseg.nii.gz ]; then cat $i >> all_electrode_paths_t1.txt; fi; done

@@ -4,7 +4,7 @@
 # subregions traversed
 id=$1
 segmtl=T00_${id}_segmentation.nii.gz
-snapmtlfn=~sudas/bin/localization/mtl_itksnaplabelfile.txt
+snapmtlfn=/oceanus/collab/herz-lab/processing_code/bin/localization/mtl_itksnaplabelfile.txt
 VOXFN=VOX_coords_mother.txt
 COORDSFILE=electrode_coordinates_T2.csv
 # VOXFN=testvox.txt

@@ -15,10 +15,10 @@ fi
 sid=$1
 
 
-export HIPPOSPM_ROOT=~sudas/bin/scripts/scripts/hippospm/bash
-MATLABROOT=/usr/global/matlabR2011b
-export PATH=~sudas/bin:$PATH
-export LD_LIBRARY_PATH=/home1/sudas/lib64:/home1/sudas/libs/icclibs:/home1/sudas/libs:$LD_LIBRARY_PATH
+export HIPPOSPM_ROOT=/oceanus/collab/herz-lab/processing_code/bin/scripts/scripts/hippospm/bash
+MATLABROOT=$(which matlab)
+export PATH=/oceanus/collab/herz-lab/processing_code/bin:$PATH
+export LD_LIBRARY_PATH=/oceanus/collab/herz-lab/processing_code/lib64:/oceanus/collab/herz-lab/processing_code/libs/icclibs:/oceanus/collab/herz-lab/processing_code/libs:$LD_LIBRARY_PATH
 
 IDS=($sid)
 

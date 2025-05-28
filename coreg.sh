@@ -24,8 +24,9 @@ if [ $# -eq 3 ]; then
   MANMAT=$3
 fi
 
-export ANTSPATH=~sudas/bin/ants/
-export PATH=~sudas/bin:$PATH
+export PATH=/oceanus/collab/herz-lab/processing_code/bin:$PATH
+export ANTSPATH=/oceanus/collab/herz-lab/processing_code/bin/ants/
+export PATH=$ANTSPATH:$PATH
 reg=${ANTSPATH}antsRegistration
 dim=3
 segtype=corr_nogray
@@ -34,7 +35,6 @@ segtype=corr_nogray
 
 oldcwd=$PWD
 cd $RAMROOT/${1}
-export PATH=$ANTSPATH:~sudas/bin:$PATH
 if $NOREG ; then
   :
 else
@@ -59,7 +59,7 @@ else
         -r [ $f, $m, 1 ] \
         -a 1 $mask \
         -o [ T00_tse_to_T00_mprageANTs , T00_tse_to_T00_mprageANTs.nii.gz, T00_tse_to_T00_mprageANTs_inverse.nii.gz ]
-      ~sudas/bin/ConvertTransformFile 3 T00_tse_to_T00_mprageANTs0GenericAffine.mat \
+      ConvertTransformFile 3 T00_tse_to_T00_mprageANTs0GenericAffine.mat \
         T00_tse_to_T00_mprageANTs0GenericAffine_RAS.mat --hm
     fi
 
@@ -78,7 +78,7 @@ else
 
   
 
-    ~sudas/bin/ConvertTransformFile 3 T01_CT_to_T00_mprageANTs0GenericAffine.mat \
+    ConvertTransformFile 3 T01_CT_to_T00_mprageANTs0GenericAffine.mat \
         T01_CT_to_T00_mprageANTs0GenericAffine_RAS.mat --hm
 
 :<<'NORUN'
@@ -163,7 +163,7 @@ if [ -f T01_${1}_mprage.nii.gz ]; then
       -r [ $f, $m, 1 ] \
       -a 1 \
       -o [ T01_CT_to_T01_mprageANTs , T01_CT_to_T01_mprageANTs.nii.gz, T01_CT_to_T01_mprageANTs_inverse.nii.gz ]
-  ~sudas/bin/ConvertTransformFile 3 T01_CT_to_T01_mprageANTs0GenericAffine.mat \
+  ConvertTransformFile 3 T01_CT_to_T01_mprageANTs0GenericAffine.mat \
         T01_CT_to_T01_mprageANTs0GenericAffine_RAS.mat --hm
 
 
@@ -180,7 +180,7 @@ if [ -f T01_${1}_mprage.nii.gz ]; then
       -r [ $f, $m, 1 ] \
       -a 1 \
       -o [ T01_mprage_to_T00_mprageANTs , T01_mprage_to_T00_mprageANTs.nii.gz, T01_mprage_to_T00_mprageANTs_inverse.nii.gz ]
-  ~sudas/bin/ConvertTransformFile 3 T01_mprage_to_T00_mprageANTs0GenericAffine.mat \
+  ConvertTransformFile 3 T01_mprage_to_T00_mprageANTs0GenericAffine.mat \
         T01_mprage_to_T00_mprageANTs0GenericAffine_RAS.mat --hm
 
 fi
@@ -230,7 +230,7 @@ fn=T01_${sub}_CT.nii
 ${SDIR}/rastransform.py vox_coords.txt. ${fn}.gz electrode_coordinates.csv
 
 # Change to T1 space
-~sudas/bin/ants/antsApplyTransformsToPoints -d 3 -i electrode_coordinates.csv -o electrode_coordinates_T1.csv \
+$ANTSPATH/antsApplyTransformsToPoints -d 3 -i electrode_coordinates.csv -o electrode_coordinates_T1.csv \
   -t [T01_CT_to_T00_mprageANTs0GenericAffine_RAS_itk.txt,1]
 fi
 NOCOORD

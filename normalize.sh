@@ -65,7 +65,7 @@ for ((i=0;i<${#IDS[*]};i++)); do
         fi
       done
       #qsub  -V -N dir${sub} -o $OUTDIR/dump -e $OUTDIR/dump -j y -pe serial 4 -l h_vmem=30.1G,s_vmem=30G -wd $OUTDIR $exe
-      qsub  -V -N DP${sub} -o $OUTDIR/dump -e $OUTDIR/dump -j y  -l h_vmem=10.1G,s_vmem=10G -wd $OUTDIR $exe
+      qsub  -V -N DP${sub} -o $OUTDIR/dump -e $OUTDIR/dump -j y -l h_vmem=10.1G,s_vmem=10G -wd $OUTDIR $exe
       #qalter -p -1023 dir${sub}
       else
         echo $id $tp exists

@@ -40,10 +40,10 @@ suff=""
 # Subject id passed on the command line
 sid=$1
 
-# ASHS_ROOT=~sudas/bin/localization/ashs-fastashs
-# ATLAS=~sudas/bin/localization/ashs_atlases/mtlatlas-ashs-fast
-ASHS_ROOT=~sudas/bin/localization/ashs
-ATLAS=~sudas/bin/localization/ashs_atlases/mtlatlas
+# ASHS_ROOT=/oceanus/collab/herz-lab/processing_code/bin/localization/ashs-fastashs
+# ATLAS=/oceanus/collab/herz-lab/processing_code/bin/localization/ashs_atlases/mtlatlas-ashs-fast
+ASHS_ROOT=/oceanus/collab/herz-lab/processing_code/bin/localization/ashs
+ATLAS=/oceanus/collab/herz-lab/processing_code/bin/localization/ashs_atlases/mtlatlas
 export ASHS_ROOT
 
 IDS=($sid)
@@ -79,7 +79,7 @@ for ((i=0;i<${#IDS[*]};i++)); do
 
 #     qsub -q RAM.q -j y -o $WDIR/dump -cwd -V -N ad"$(echo ${id} | sed -e 's/_S_//g')" \
       { $ASHS_ROOT/bin/ashs_main.sh \
-        -Q -q "-q RAM.q -l h_vmem=10.1G,s_vmem=10G" \
+        -Q -q "-l h_vmem=10.1G,s_vmem=10G" \
         -N -a $ATLAS -s 0-7 -d -T -I $id -g $MPRAGE -f $TSE -w $WDIR ; eval ${mail_str};} &
 
 # -N

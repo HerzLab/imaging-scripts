@@ -5,8 +5,8 @@
 sub=$1
 FILE=$PWD/T00_${sub}_mprage.nii.gz
 OUT_DIR=$PWD
-TEMPLATE_DIR=/home1/dorian.pustina/pennTemplate
-export ANTSPATH=~sudas/bin/localization/ants_avants_Dec162013/
+TEMPLATE_DIR=/oceanus/collab/herz-lab/processing_code/localization/pennTemplate
+export ANTSPATH=/oceanus/collab/herz-lab/processing_code/localization/ants_avants_Dec162013/
 
   ${ANTSPATH}antsBrainExtraction.sh \
             -d 3 \

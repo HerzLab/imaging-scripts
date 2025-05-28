@@ -1,6 +1,6 @@
 # Imaging Shell Scripts
 
-Exported from ~sudas/DARPA/scripts on Rhino, and depends on scripts and
+Exported from ~sudas/DARPA/scripts on Rhino in the Kahana CML, and depends on scripts and
 binaries in ~sudas.
 
 

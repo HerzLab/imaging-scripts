@@ -8,13 +8,13 @@ FILE=$PWD/T00_${sub}_mprage.nii.gz
 OUT_DIR=$PWD/T00/thickness/
 mkdir -p $OUT_DIR
 BASENAME=`basename $FILE .nii.gz` 
-TEMPLATE_DIR=~sudas/bin/localization/NickOasisTemplate
-export ANTSPATH=~sudas/bin/localization/ants_avants_Dec162013/
-RDIR=~sudas/bin/localization/template_to_NickOasis
+TEMPLATE_DIR=/oceanus/collab/herz-lab/processing_code/bin/localization/NickOasisTemplate
+export ANTSPATH=/oceanus/collab/herz-lab/processing_code/bin/localization/ants_avants_Dec162013/
+RDIR=/oceanus/collab/herz-lab/processing_code/bin/localization/template_to_NickOasis
 faffine=$RDIR/ch22t0GenericAffine.mat
 fwarp=$RDIR/ch22t1Warp.nii.gz
 finversewarp=$RDIR/ch22t1InverseWarp.nii.gz
-CH2=~sudas/DARPA/ch2.nii.gz
+CH2=/oceanus/collab/herz-lab/processing_code/bin/localization/ch2.nii.gz
 
 
 if [ ! -f $OUT_DIR/${sub}CorticalThicknessNormalizedToTemplate.nii.gz ]; then

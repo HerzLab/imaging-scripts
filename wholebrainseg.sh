@@ -47,7 +47,7 @@ atlassuff=""
 # Subject id passed on the command line
 sid=$1
 
-AHEAD_ROOT=~sudas/bin/localization/ahead_joint/turnkey
+AHEAD_ROOT=/oceanus/collab/herz-lab/processing_code/bin/localization/ahead_joint/turnkey
 
 IDS=($sid)
 

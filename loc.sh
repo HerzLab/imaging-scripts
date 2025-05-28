@@ -1,19 +1,20 @@
 #!/bin/bash
 set -x
 sub=$1
-pth=cfndata/picsl/srdas
-pth=""
-:<<COMM
-fn=/data10/RAM/subjects/$sub/tal/VOX_coords_mother.txt
-if [ -f $fn ]; then
-  cp $fn VOX_coords_mother.txt
-fi
-fn=~gorniak/$sub/VOX_coords_mother.txt
-if [ -f $fn ]; then 
-  cp $fn VOX_coords_mother.txt
-fi
-COMM
-export PATH=~sudas/bin:$PATH
+#pth=cfndata/picsl/srdas
+#pth=""
+#:<<COMM
+#fn=/data10/RAM/subjects/$sub/tal/VOX_coords_mother.txt
+#if [ -f $fn ]; then
+#  cp $fn VOX_coords_mother.txt
+#
+#fi
+#fn=~gorniak/$sub/VOX_coords_mother.txt
+#if [ -f $fn ]; then 
+#  cp $fn VOX_coords_mother.txt
+#fi
+#COMM
+export PATH=/oceanus/collab/herz-lab/processing_code/bin:$PATH
 doall=1
 fn=VOX_coords_mother.txt
 CT=T01_${sub}_CT.nii.gz
@@ -21,15 +22,15 @@ segmtlT2=T00_${sub}_segmentation.nii.gz
 segwb=T00_${sub}_mprage_wholebrainseg_to_T01_CT.nii.gz
 segmtl=T00_${sub}_segmentation_to_T01_CT.nii.gz
 segwbT1=T00_${sub}_mprage/T00_${sub}_mprage_wholebrainseg.nii.gz
-snapwbfn=~sudas/bin/localization/ahead_joint/turnkey/data/WholeBrain/MICCAI-Challenge-2012-Label-Information.csv
-snapmtlfn=~sudas/bin/localization/ashs_atlases/mtlatlas/snap/snaplabels.txt
-snapelfnbase=~sudas/bin/localization/electrode_snaplabel_color.txt
-TEMPLATE=~sudas/bin/localization/NickOasisTemplate/T_template0.nii.gz
-RDIR=~sudas/bin/localization/template_to_NickOasis
+snapwbfn=/oceanus/collab/herz-lab/processing_code/bin/localization/ahead_joint/turnkey/data/WholeBrain/MICCAI-Challenge-2012-Label-Information.csv
+snapmtlfn=/oceanus/collab/herz-lab/processing_code/bin/localization/ashs_atlases/mtlatlas/snap/snaplabels.txt
+snapelfnbase=/oceanus/collab/herz-lab/processing_code/bin/localization/electrode_snaplabel_color.txt
+TEMPLATE=/oceanus/collab/herz-lab/processing_code/bin/localization/NickOasisTemplate/T_template0.nii.gz
+RDIR=/oceanus/collab/herz-lab/processing_code/bin/localization/template_to_NickOasis
 faffine=$RDIR/ch22t0GenericAffine.mat
 fwarp=$RDIR/ch22t1Warp.nii.gz
 finversewarp=$RDIR/ch22t1InverseWarp.nii.gz
-CH2=~sudas/DARPA/ch2.nii.gz
+CH2=/oceanus/collab/herz-lab/processing_code/bin/localization/ch2.nii.gz
 
 # Code for drawing sphere with -sdt and reporting percent of subfields within that
 # c3d T00_R1026D_tseelectrodelabels_spheres.nii.gz -thresh 37 37 1 0 -sdt -thresh -1 1 1 0 -o testblob.nii.gz -as A T00_R1026D_segmentation.nii.gz -times -insert A 1 -lstat
@@ -160,14 +161,14 @@ ${SDIR}/rastransform.py vox_coords.txt ${fn}.gz electrode_coordinates.csv
 
 
 # Generate coordinates from voxel labels -- not doing this
-# ~sudas/bin/ants/ImageMath 3 electrode_coordinates.csv LabelStats T01_${sub}_electrodelabels.nii.gz T01_${sub}_electrodelabels.nii.gz
+# /oceanus/collab/herz-lab/processing_code/bin/ants/ImageMath 3 electrode_coordinates.csv LabelStats T01_${sub}_electrodelabels.nii.gz T01_${sub}_electrodelabels.nii.gz
 
 # Change to T1, T2 and template spaces
-~sudas/bin/ants/antsApplyTransformsToPoints -d 3 -i electrode_coordinates.csv -o electrode_coordinates_T1.csv \
+/oceanus/collab/herz-lab/processing_code/bin/ants/antsApplyTransformsToPoints -d 3 -i electrode_coordinates.csv -o electrode_coordinates_T1.csv \
   -t [T01_CT_to_T00_mprageANTs0GenericAffine_RAS_itk.txt,1]
-~sudas/bin/ants/antsApplyTransformsToPoints -d 3 -i electrode_coordinates.csv -o electrode_coordinates_T2.csv \
+/oceanus/collab/herz-lab/processing_code/bin/ants/antsApplyTransformsToPoints -d 3 -i electrode_coordinates.csv -o electrode_coordinates_T2.csv \
   -t T01_CT_to_T00_tseANTs_RAS_inv_itk.txt
-~sudas/bin/ants/antsApplyTransformsToPoints -d 3 -i electrode_coordinates.csv -o electrode_coordinates_mni.csv \
+/oceanus/collab/herz-lab/processing_code/bin/ants/antsApplyTransformsToPoints -d 3 -i electrode_coordinates.csv -o electrode_coordinates_mni.csv \
   -t [T01_CT_to_T00_mprageANTs0GenericAffine_RAS_itk.txt,1] -t [T00/thickness/${sub}TemplateToSubject0GenericAffine.mat,1]\
   -t T00/thickness/${sub}TemplateToSubject1InverseWarp.nii.gz -t [$faffine,1] -t $finversewarp
 # Change from ITK to Nifti coordinates and get rid of header
@@ -362,11 +363,11 @@ cat  electrode_coordinates_mid.csv >> test.csv
 mv test.csv electrode_coordinates_mid.csv
 
 # Change to T1, T2 and template spaces
-~sudas/bin/ants/antsApplyTransformsToPoints -d 3 -i electrode_coordinates_mid.csv -o electrode_coordinates_T1_mid.csv \
+/oceanus/collab/herz-lab/processing_code/bin/ants/antsApplyTransformsToPoints -d 3 -i electrode_coordinates_mid.csv -o electrode_coordinates_T1_mid.csv \
   -t [T01_CT_to_T00_mprageANTs0GenericAffine_RAS_itk.txt,1] 
-~sudas/bin/ants/antsApplyTransformsToPoints -d 3 -i electrode_coordinates_mid.csv -o electrode_coordinates_T2_mid.csv \
+/oceanus/collab/herz-lab/processing_code/bin/ants/antsApplyTransformsToPoints -d 3 -i electrode_coordinates_mid.csv -o electrode_coordinates_T2_mid.csv \
   -t T01_CT_to_T00_tseANTs_RAS_inv_itk.txt
-~sudas/bin/ants/antsApplyTransformsToPoints -d 3 -i electrode_coordinates_mid.csv -o electrode_coordinates_mni_mid.csv \
+/oceanus/collab/herz-lab/processing_code/bin/ants/antsApplyTransformsToPoints -d 3 -i electrode_coordinates_mid.csv -o electrode_coordinates_mni_mid.csv \
   -t [T01_CT_to_T00_mprageANTs0GenericAffine_RAS_itk.txt,1] -t [T00/thickness/${sub}TemplateToSubject0GenericAffine.mat,1]\
   -t T00/thickness/${sub}TemplateToSubject1InverseWarp.nii.gz -t [$faffine,1] -t $finversewarp
 # Change from ITK to Nifti coordinates
